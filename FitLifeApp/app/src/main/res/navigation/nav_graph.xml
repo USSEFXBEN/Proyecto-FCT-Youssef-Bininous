@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.fitlifeapp.view.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/login_fragment">
+
+        <action
+            android:id="@+id/action_loginFragment_to_registrarFragment"
+            app:destination="@id/registrarFragment" />
+
+        <action
+            android:id="@+id/action_loginFragment_to_dashboardFragment"
+            app:destination="@id/nav_home" />
+
+        <action
+            android:id="@+id/action_loginFragment_to_routinesFragment"
+            app:destination="@id/nav_routines" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registrarFragment"
+        android:name="com.example.fitlifeapp.view.RegistrarFragment"
+        android:label="Registrar"
+        tools:layout="@layout/registrar_fragment">
+
+        <action
+            android:id="@+id/action_registrarFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+
+        <action
+            android:id="@+id/action_registrarFragment_to_dashboardFragment"
+            app:destination="@id/nav_home" />
+
+        <action
+            android:id="@+id/action_registrarFragment_to_routinesFragment"
+            app:destination="@id/nav_routines" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.fitlifeapp.view.DashboardFragment"
+        android:label="Dashboard"
+        tools:layout="@layout/fragment_dashboard" >
+
+        <action
+            android:id="@+id/action_dashboardFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+
+        <action
+            android:id="@+id/action_dashboardFragment_to_routinesFragment"
+            app:destination="@id/nav_routines" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_routines"
+        android:name="com.example.fitlifeapp.view.RoutinesFragment"
+        android:label="Rutinas"
+        tools:layout="@layout/fragment_rutinas" >
+
+        <action
+            android:id="@+id/action_routinesFragment_to_dashboardFragment"
+            app:destination="@id/nav_home" />
+
+        <action
+            android:id="@+id/action_routinesFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+</navigation>

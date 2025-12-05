@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 1. Inicio (Dashboard) -->
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home_outline"
+        android:title="Inicio" />
+
+    <!-- 2. Rutinas (Calendario) -->
+    <item
+        android:id="@+id/nav_routines"
+        android:icon="@drawable/ic_calendar"
+        android:title="Rutinas" />
+
+    <!-- 3. Recordatorios (Campana/Notificaciones) -->
+    <item
+        android:id="@+id/nav_reminders"
+        android:icon="@drawable/ic_notifications_outline"
+        android:title="Recordatorios" />
+
+    <!-- 4. Progreso (Gráfico de línea) -->
+    <item
+        android:id="@+id/nav_progress"
+        android:icon="@drawable/ic_progress_graph_outline"
+        android:title="Progreso" />
+
+    <!-- 5. Perfil (Persona) -->
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_person_outline"
+        android:title="Perfil" />
+
+</menu>
