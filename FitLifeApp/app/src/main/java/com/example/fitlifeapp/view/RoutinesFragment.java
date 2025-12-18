@@ -6,12 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,9 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RoutinesFragment extends Fragment {
 
@@ -34,7 +33,6 @@ public class RoutinesFragment extends Fragment {
     private RutinaAdapter adapter;
     private List<Rutina> listaRutinas;
     private FloatingActionButton fabAgregar;
-    private TextView tvVacio;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -42,10 +40,12 @@ public class RoutinesFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_rutinas, container, false);
 
-        // Inicializar Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
@@ -56,64 +56,59 @@ public class RoutinesFragment extends Fragment {
             return view;
         }
 
-        // Configurar vistas
         recyclerView = view.findViewById(R.id.routines_recycler_view);
         fabAgregar = view.findViewById(R.id.fab_add_routine);
-        // tvVacio = view.findViewById(R.id.tvListaVacia); // opcional
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         listaRutinas = new ArrayList<>();
 
-        // Configurar Adapter correctamente
-        adapter = new RutinaAdapter(listaRutinas, new HashMap<>(), (rutina, position) -> eliminarRutina(rutina));
+        adapter = new RutinaAdapter(
+                listaRutinas,
+                null,
+                RutinaAdapter.Mode.MANAGEMENT,
+                new RutinaAdapter.RoutineItemListener() {
+
+                    @Override
+                    public void onItemClick(Rutina rutina, int position) {
+                        // Opcional → abrir edición
+                        abrirEditarRutina(rutina);
+                    }
+
+                    @Override
+                    public void onEditClick(Rutina rutina, int position) {
+                        abrirEditarRutina(rutina);
+                    }
+
+                    @Override
+                    public void onDeleteClick(Rutina rutina, int position) {
+                        eliminarRutina(rutina);
+                    }
+                }
+        );
+
         recyclerView.setAdapter(adapter);
 
-        // Botón agregar rutina
-        fabAgregar.setOnClickListener(v -> mostrarDialogoCrear());
+        fabAgregar.setOnClickListener(v -> abrirCrearRutina());
 
-        // Cargar rutinas iniciales
         cargarRutinas();
 
         return view;
     }
 
-    // --- DIALOGO PARA CREAR RUTINA ---
-    private void mostrarDialogoCrear() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Nueva Rutina");
-
-        final EditText input = new EditText(getContext());
-        input.setHint("Nombre de la rutina (Ej: Pecho y Tríceps)");
-        builder.setView(input);
-
-        builder.setPositiveButton("Guardar", (dialog, which) -> {
-            String nombre = input.getText().toString().trim();
-            if (!nombre.isEmpty()) {
-                guardarEnFirebase(nombre);
-            } else {
-                Toast.makeText(getContext(), "Escribe un nombre", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
-        builder.show();
+    private void abrirCrearRutina() {
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        navController.navigate(R.id.action_nav_routines_to_crearRutinaFragment);
     }
 
-    // --- GUARDAR NUEVA RUTINA EN FIRESTORE ---
-    private void guardarEnFirebase(String nombre) {
-        // Crear objeto Rutina con constructor que acepte nombre y userId
-        Rutina nuevaRutina = new Rutina(nombre, userId);
+    private void abrirEditarRutina(Rutina rutina) {
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 
-        db.collection("routines")
-                .add(nuevaRutina)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(getContext(), "Rutina guardada", Toast.LENGTH_SHORT).show();
-                    cargarRutinas();
-                })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error al guardar: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        Bundle bundle = new Bundle();
+        bundle.putString("rutinaId", rutina.getId());
+
+        navController.navigate(R.id.action_nav_routines_to_editarRutinaFragment, bundle);
     }
 
-    // --- CARGAR RUTINAS DESDE FIRESTORE ---
     private void cargarRutinas() {
         db.collection("routines")
                 .whereEqualTo("userId", userId)
@@ -122,15 +117,15 @@ public class RoutinesFragment extends Fragment {
                     listaRutinas.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Rutina r = doc.toObject(Rutina.class);
-                        r.setId(doc.getId()); // Guardar ID del documento
+                        r.setId(doc.getId());
                         listaRutinas.add(r);
                     }
                     adapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error al cargar rutinas", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Error al cargar rutinas: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    // --- ELIMINAR RUTINA ---
     private void eliminarRutina(Rutina rutina) {
         if (rutina.getId() == null) return;
 
@@ -141,6 +136,7 @@ public class RoutinesFragment extends Fragment {
                     listaRutinas.remove(rutina);
                     adapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error al eliminar rutina", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(), "Error al eliminar rutina: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

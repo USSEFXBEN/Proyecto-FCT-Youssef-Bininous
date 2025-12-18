@@ -5,6 +5,7 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
+    <!-- LOGIN -->
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.fitlifeapp.view.LoginFragment"
@@ -22,8 +23,13 @@
         <action
             android:id="@+id/action_loginFragment_to_routinesFragment"
             app:destination="@id/nav_routines" />
+
+        <action
+            android:id="@+id/action_loginFragment_to_nav_reminders"
+            app:destination="@id/nav_reminders" />
     </fragment>
 
+    <!-- REGISTRAR -->
     <fragment
         android:id="@+id/registrarFragment"
         android:name="com.example.fitlifeapp.view.RegistrarFragment"
@@ -41,13 +47,18 @@
         <action
             android:id="@+id/action_registrarFragment_to_routinesFragment"
             app:destination="@id/nav_routines" />
+
+        <action
+            android:id="@+id/action_registrarFragment_to_nav_reminders"
+            app:destination="@id/nav_reminders" />
     </fragment>
 
+    <!-- DASHBOARD -->
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.fitlifeapp.view.DashboardFragment"
         android:label="Dashboard"
-        tools:layout="@layout/fragment_dashboard" >
+        tools:layout="@layout/fragment_dashboard">
 
         <action
             android:id="@+id/action_dashboardFragment_to_loginFragment"
@@ -56,13 +67,18 @@
         <action
             android:id="@+id/action_dashboardFragment_to_routinesFragment"
             app:destination="@id/nav_routines" />
+
+        <action
+            android:id="@+id/action_dashboardFragment_to_nav_reminders"
+            app:destination="@id/nav_reminders" />
     </fragment>
 
+    <!-- RUTINAS -->
     <fragment
         android:id="@+id/nav_routines"
         android:name="com.example.fitlifeapp.view.RoutinesFragment"
         android:label="Rutinas"
-        tools:layout="@layout/fragment_rutinas" >
+        tools:layout="@layout/fragment_rutinas">
 
         <action
             android:id="@+id/action_routinesFragment_to_dashboardFragment"
@@ -71,6 +87,75 @@
         <action
             android:id="@+id/action_routinesFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+
+        <!-- Crear Rutina -->
+        <action
+            android:id="@+id/action_nav_routines_to_crearRutinaFragment"
+            app:destination="@id/crearRutinaFragment" />
+
+        <!-- Editar Rutina -->
+        <action
+            android:id="@+id/action_nav_routines_to_editarRutinaFragment"
+            app:destination="@id/editarRutinaFragment" />
     </fragment>
 
+    <!-- CREAR RUTINA -->
+    <fragment
+        android:id="@+id/crearRutinaFragment"
+        android:name="com.example.fitlifeapp.view.CrearRutinaFragment"
+        android:label="Crear Rutina"
+        tools:layout="@layout/fragment_crear_rutina">
+
+        <action
+            android:id="@+id/action_crearRutinaFragment_to_nav_routines"
+            app:destination="@id/nav_routines" />
+    </fragment>
+
+    <!-- EDITAR RUTINA -->
+    <fragment
+        android:id="@+id/editarRutinaFragment"
+        android:name="com.example.fitlifeapp.view.EditarRutinaFragment"
+        android:label="Editar Rutina"
+        tools:layout="@layout/fragment_editar_rutina">
+
+        <argument
+            android:name="rutinaId"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_editarRutinaFragment_to_nav_routines"
+            app:destination="@id/nav_routines" />
+    </fragment>
+
+    <!-- RECORDATORIOS -->
+    <fragment
+        android:id="@+id/nav_reminders"
+        android:name="com.example.fitlifeapp.view.RecordatoriosFragment"
+        android:label="Recordatorios"
+        tools:layout="@layout/fragment_recordatorios">
+
+        <!-- Crear Recordatorio -->
+        <action
+            android:id="@+id/action_nav_reminders_to_crearRecordatorio"
+            app:destination="@id/crearRecordatorioFragment" />
+    </fragment>
+
+    <!-- CREAR RECORDATORIO -->
+    <fragment
+        android:id="@+id/crearRecordatorioFragment"
+        android:name="com.example.fitlifeapp.view.CrearRecordatorioFragment"
+        android:label="Crear Recordatorio"
+        tools:layout="@layout/fragment_crear_recordatorio">
+
+        <action
+            android:id="@+id/action_crearRecordatorioFragment_to_nav_reminders"
+            app:destination="@id/nav_reminders" />
+    </fragment>
+
+    <!-- PROGRESO (nuevo) -->
+    <fragment
+        android:id="@+id/nav_progress"
+        android:name="com.example.fitlifeapp.view.ProgresoSemanalFragment"
+        android:label="Progreso"
+        tools:layout="@layout/fragment_progreso_semanal" />
 </navigation>

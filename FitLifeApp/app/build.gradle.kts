@@ -49,6 +49,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.google.android.material:material:1.12.0")
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
 
@@ -60,4 +61,6 @@ dependencies {
 
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

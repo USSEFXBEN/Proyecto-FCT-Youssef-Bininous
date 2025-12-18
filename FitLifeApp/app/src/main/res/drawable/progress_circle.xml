@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo gris del círculo -->
+    <item>
+        <shape android:shape="oval">
+            <size android:width="200dp" android:height="200dp"/>
+            <solid android:color="#E0E0E0"/>
+        </shape>
+    </item>
+
+    <!-- Círculo que representa progreso -->
+    <item>
+        <shape android:shape="oval">
+            <size android:width="200dp" android:height="200dp"/>
+            <solid android:color="@android:color/transparent"/>
+            <stroke
+                android:width="22dp"
+                android:color="#24C96D"/> <!-- Color del progreso -->
+        </shape>
+        <clip android:gravity="top"/>
+    </item>
+
+</layer-list>
