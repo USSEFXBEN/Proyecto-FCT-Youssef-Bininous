@@ -1,5 +1,8 @@
 package com.example.fitlifeapp.view;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
@@ -20,34 +23,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Obtener la referencia a la BottomNavigationView
+        solicitarPermisoNotificaciones();
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // 2. Obtener el NavController del NavHostFragment
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
 
-        if (navHostFragment != null) {
-            NavController navController = navHostFragment.getNavController();
+        if (navHostFragment == null) return;
 
-            // 3. Conectar la BottomNavigationView con el NavController
-            // Esto funciona porque los IDs de los destinos en nav_graph.xml (nav_home, nav_routines)
-            // coinciden con los IDs del menú (bottom_nav_menu.xml).
-            NavigationUI.setupWithNavController(bottomNavigationView, navController);
+        NavController navController = navHostFragment.getNavController();
 
-            // 4. Lógica para ocultar/mostrar la BottomNavigationView en pantallas específicas
-            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                int destId = destination.getId();
+        // conectar BottomNavigationView con NavController
+        NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
-                // IDs de los destinos donde la barra debe estar OCULTA (Login/Registro)
-                if (destId == R.id.loginFragment || destId == R.id.registrarFragment) {
-                    bottomNavigationView.setVisibility(View.GONE);
-                }
-                // En cualquier otro destino (Dashboard, Rutinas, etc.), la barra es VISIBLE
-                else {
-                    bottomNavigationView.setVisibility(View.VISIBLE);
-                }
-            });
+        // mostrar/ocultar bottom según destino
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            int id = destination.getId();
+            if (id == R.id.loginFragment || id == R.id.registrarFragment) {
+                bottomNavigationView.setVisibility(View.GONE);
+            } else {
+                bottomNavigationView.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void solicitarPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+            }
         }
     }
 }

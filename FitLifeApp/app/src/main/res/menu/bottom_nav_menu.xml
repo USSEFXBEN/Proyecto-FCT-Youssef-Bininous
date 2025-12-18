@@ -22,7 +22,7 @@
     <!-- 4. Progreso (Gráfico de línea) -->
     <item
         android:id="@+id/nav_progress"
-        android:icon="@drawable/ic_progress_graph_outline"
+        android:icon="@drawable/ic_progress_menu"
         android:title="Progreso" />
 
     <!-- 5. Perfil (Persona) -->

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <RelativeLayout
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- ICONO -->
+        <ImageView
+            android:id="@+id/icono"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_clock"
+            android:alpha="1" />
+
+        <!-- TÍTULO -->
+        <TextView
+            android:id="@+id/tvTitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/icono"
+            android:layout_marginStart="12dp"
+            android:text="Beber Agua"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333" />
+
+        <!-- SUBTÍTULO: HORA + FRECUENCIA -->
+        <TextView
+            android:id="@+id/tvSubtitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvTitulo"
+            android:layout_toRightOf="@id/icono"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:text="09:00 AM  ·  Diario"
+            android:textSize="13sp"
+            android:textColor="#777" />
+
+        <!-- CATEGORÍA -->
+        <TextView
+            android:id="@+id/tvCategoria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvSubtitulo"
+            android:layout_toRightOf="@id/icono"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:text="Salud"
+            android:textSize="12sp"
+            android:textColor="#4CAF50" />
+
+        <!-- SWITCH ACTIVO -->
+        <Switch
+            android:id="@+id/switchActivo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true" />
+
+        <!-- BOTÓN ELIMINAR -->
+        <ImageButton
+            android:id="@+id/btnEliminar"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_below="@id/switchActivo"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="10dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_delete"
+            app:tint="#FF4444" />
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>
