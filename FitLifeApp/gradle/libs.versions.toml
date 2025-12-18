@@ -9,8 +9,11 @@ constraintlayout = "2.1.4"
 navigationFragment = "2.6.0"
 navigationUi = "2.6.0"
 fragment = "1.8.9"
+<<<<<<< HEAD
 firebaseAuth = "24.0.1"
 firebaseFirestore = "26.0.2"
+=======
+>>>>>>> 4375b5de29e512055b802295b170935e5c980609
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -22,8 +25,11 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
 fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+<<<<<<< HEAD
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+=======
+>>>>>>> 4375b5de29e512055b802295b170935e5c980609
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

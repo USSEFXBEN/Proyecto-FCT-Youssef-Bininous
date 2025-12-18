@@ -13,7 +13,11 @@
         android:theme="@style/Theme.FitLifeApp"
         tools:targetApi="31">
         <activity
+<<<<<<< HEAD
             android:name=".view.MainActivity"
+=======
+            android:name=".MainActivity"
+>>>>>>> 4375b5de29e512055b802295b170935e5c980609
             android:exported="true"
             android:theme="@style/Theme.FitLifeApp">
             <intent-filter>
