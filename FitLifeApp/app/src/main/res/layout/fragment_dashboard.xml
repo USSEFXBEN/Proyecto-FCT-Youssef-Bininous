@@ -1,91 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/dashboardScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:fitsSystemWindows="true"
+    android:background="#F5F5F5"
     tools:context=".view.DashboardFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="24dp">
 
-        <!-- Header Usuario -->
+        <!-- HEADER USUARIO -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardHeaderUsuario"
             android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardUseCompatPadding="true"
-            app:cardElevation="6dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="24dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:background="@drawable/bg_gradient_fitlife">
 
                 <TextView
                     android:id="@+id/tvTituloPanelUsuario"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
                     android:text="Panel de Usuario"
                     android:textColor="@android:color/white"
-                    android:textStyle="bold"
                     android:textSize="16sp"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true" />
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/tvSaludoUsuario"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hola, Juan Pérez 👋"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
+                    android:layout_below="@id/tvTituloPanelUsuario"
                     android:layout_marginTop="16dp"
-                    android:layout_alignParentStart="true" />
+                    android:text="Hola, Usuario 👋"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/tvMensajeDia"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@id/tvSaludoUsuario"
+                    android:layout_marginTop="6dp"
                     android:text="¡Hagamos de hoy un día increíble!"
                     android:textColor="@android:color/white"
-                    android:textSize="12sp"
-                    android:layout_below="@id/tvSaludoUsuario"
-                    android:layout_marginTop="4dp" />
-
-                <ImageButton
-                    android:id="@+id/btnLogout"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_heart"
-                    android:contentDescription="Cerrar sesión"
-                    android:padding="4dp" />
+                    android:textSize="14sp"/>
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Progreso Semanal -->
+        <!-- PROGRESO SEMANAL -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardProgresoSemanal"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardUseCompatPadding="true"
-            app:cardElevation="4dp"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
             app:layout_constraintTop_toBottomOf="@id/cardHeaderUsuario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -93,63 +85,48 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:padding="20dp"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:gravity="center_horizontal">
 
                 <TextView
                     android:id="@+id/tvTituloProgreso"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Progreso Semanal"
-                    android:textSize="14sp"
+                    android:text="Progreso Díario"
+                    android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="#333333" />
+                    android:textColor="#333333"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/circularProgressDashboard"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="16dp"
+                    app:indicatorSize="160dp"
+                    app:trackThickness="14dp"
+                    app:indicatorColor="@color/fitlife_green"
+                    app:trackColor="#E0E0E0"/>
+
+                <TextView
+                    android:id="@+id/tvProgresoTexto"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center_horizontal"
-                    android:layout_marginTop="12dp">
-
-                    <!-- CÍRCULO DE PROGRESO -->
-                    <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/circularProgressDashboard"
-                        android:layout_width="160dp"
-                        android:layout_height="160dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="8dp"
-
-                        app:indicatorSize="160dp"
-                        app:trackThickness="16dp"
-
-                        app:indicatorColor="@android:color/holo_green_light"
-                        app:trackColor="#E0E0E0"
-
-                        app:indicatorDirectionCircular="clockwise" />
-
-
-                    <TextView
-                        android:id="@+id/tvProgresoTexto"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="¡Excelente trabajo! ¡Sigue así!"
-                        android:textSize="12sp"
-                        android:textColor="#333333" />
-                </LinearLayout>
+                    android:layout_marginTop="12dp"
+                    android:text="¡Excelente trabajo! ¡Sigue así!"
+                    android:textSize="14sp"
+                    android:textColor="#666666"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Rutinas de Hoy -->
+        <!-- RUTINAS DE HOY -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardRutinasHoy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardUseCompatPadding="true"
-            app:cardElevation="4dp"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
             app:layout_constraintTop_toBottomOf="@id/cardProgresoSemanal"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -157,24 +134,24 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvRutinasHoyTitulo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Rutinas de Hoy"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="#333333" />
+                    android:textColor="#333333"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvRutinas"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:layout_marginTop="12dp" />
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

@@ -1,11 +1,9 @@
 package com.example.fitlifeapp.view;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,13 +19,15 @@ import com.example.fitlifeapp.RutinaAdapter;
 import com.example.fitlifeapp.model.Rutina;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoutinesFragment extends Fragment {
+public class RutinaFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private RutinaAdapter adapter;
@@ -70,7 +70,6 @@ public class RoutinesFragment extends Fragment {
 
                     @Override
                     public void onItemClick(Rutina rutina, int position) {
-                        // Opcional → abrir edición
                         abrirEditarRutina(rutina);
                     }
 
@@ -96,17 +95,22 @@ public class RoutinesFragment extends Fragment {
     }
 
     private void abrirCrearRutina() {
-        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        NavController navController =
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
         navController.navigate(R.id.action_nav_routines_to_crearRutinaFragment);
     }
 
     private void abrirEditarRutina(Rutina rutina) {
-        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        NavController navController =
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 
         Bundle bundle = new Bundle();
         bundle.putString("rutinaId", rutina.getId());
 
-        navController.navigate(R.id.action_nav_routines_to_editarRutinaFragment, bundle);
+        navController.navigate(
+                R.id.action_nav_routines_to_editarRutinaFragment,
+                bundle
+        );
     }
 
     private void cargarRutinas() {
@@ -123,20 +127,59 @@ public class RoutinesFragment extends Fragment {
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Error al cargar rutinas: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(getContext(),
+                                "Error al cargar rutinas",
+                                Toast.LENGTH_SHORT).show());
     }
 
     private void eliminarRutina(Rutina rutina) {
         if (rutina.getId() == null) return;
 
-        db.collection("routines").document(rutina.getId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Rutina eliminada", Toast.LENGTH_SHORT).show();
-                    listaRutinas.remove(rutina);
-                    adapter.notifyDataSetChanged();
+        db.collection("progress")
+                .whereEqualTo("rutinaId", rutina.getId())
+                .whereEqualTo("userId", userId) // 🔥 CLAVE
+                .get()
+                .addOnSuccessListener(progressSnapshots -> {
+
+                    WriteBatch batch = db.batch();
+
+                    for (QueryDocumentSnapshot doc : progressSnapshots) {
+                        batch.delete(doc.getReference());
+                    }
+
+                    batch.delete(
+                            db.collection("routines").document(rutina.getId())
+                    );
+
+                    batch.commit()
+                            .addOnSuccessListener(unused -> {
+
+                                db.collection("users")
+                                        .document(userId)
+                                        .update("totalRutinas", FieldValue.increment(-1));
+
+                                listaRutinas.remove(rutina);
+                                adapter.notifyDataSetChanged();
+
+                                Toast.makeText(
+                                        getContext(),
+                                        "Rutina y progreso eliminados",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(
+                                            getContext(),
+                                            "Error al eliminar datos",
+                                            Toast.LENGTH_SHORT
+                                    ).show());
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Error al eliminar rutina: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(
+                                getContext(),
+                                "Error al buscar progreso",
+                                Toast.LENGTH_SHORT
+                        ).show());
     }
+
 }

@@ -18,6 +18,7 @@ import androidx.navigation.Navigation;
 import com.example.fitlifeapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginFragment extends Fragment {
 
@@ -26,6 +27,7 @@ public class LoginFragment extends Fragment {
     private TextView tvRegister, tvForgotPassword;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private NavController navController;
 
     @Override
@@ -34,17 +36,21 @@ public class LoginFragment extends Fragment {
 
         FirebaseUser usuarioActual = mAuth.getCurrentUser();
         if (usuarioActual != null) {
-            Toast.makeText(getContext(), "Usuario ya logueado: " + usuarioActual.getEmail(), Toast.LENGTH_SHORT).show();
-            navController.navigate(R.id.action_loginFragment_to_dashboardFragment);
+            comprobarRolYRedirigir(usuarioActual.getUid());
         }
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.login_fragment, container, false);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 
         etEmail = view.findViewById(R.id.etEmail);
@@ -53,9 +59,13 @@ public class LoginFragment extends Fragment {
         tvRegister = view.findViewById(R.id.tvRegister);
         tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
 
-        tvRegister.setOnClickListener(v -> navController.navigate(R.id.action_loginFragment_to_registrarFragment));
+        tvRegister.setOnClickListener(
+                v -> navController.navigate(R.id.action_loginFragment_to_registrarFragment));
+
         tvForgotPassword.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Función próximamente disponible", Toast.LENGTH_SHORT).show());
+                Toast.makeText(getContext(),
+                        "Función próximamente disponible",
+                        Toast.LENGTH_SHORT).show());
 
         btnLogin.setOnClickListener(v -> iniciarSesion());
 
@@ -67,7 +77,9 @@ public class LoginFragment extends Fragment {
         String password = etPassword.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(getContext(), "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(),
+                    "Rellena todos los campos",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -75,12 +87,43 @@ public class LoginFragment extends Fragment {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(getContext(), "Bienvenido " + (user != null ? user.getEmail() : ""), Toast.LENGTH_SHORT).show();
-                        navController.navigate(R.id.action_loginFragment_to_dashboardFragment);
+                        if (user != null) {
+                            comprobarRolYRedirigir(user.getUid());
+                        }
                     } else {
-                        Toast.makeText(getContext(), "Error en el inicio de sesión: " + task.getException().getMessage(),
+                        Toast.makeText(getContext(),
+                                "Error en el inicio de sesión",
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    /**
+     * Comprueba el rol del usuario en Firestore y redirige
+     */
+    private void comprobarRolYRedirigir(String uid) {
+        db.collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) {
+                        Toast.makeText(getContext(),
+                                "Usuario sin datos",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String rol = doc.getString("rol");
+
+                    if ("admin".equalsIgnoreCase(rol)) {
+                        navController.navigate(R.id.nav_admin);
+                    } else {
+                        navController.navigate(R.id.nav_home);
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(),
+                                "Error al verificar el rol",
+                                Toast.LENGTH_SHORT).show());
     }
 }

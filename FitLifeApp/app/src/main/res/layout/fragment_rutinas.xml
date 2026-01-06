@@ -7,109 +7,86 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:fillViewport="true"
-    tools:context=".view.RoutinesFragment">
+    tools:context=".view.RutinaFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- CABECERA PANEL USUARIO (igual que en Dashboard) -->
+        <!-- HEADER CON TÍTULO -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardHeaderUsuario"
+            android:id="@+id/cardHeaderRutinas"
             android:layout_width="0dp"
             android:layout_height="120dp"
             android:layout_marginTop="12dp"
             app:cardCornerRadius="20dp"
             app:cardElevation="6dp"
             app:cardUseCompatPadding="true"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:background="@drawable/bg_gradient_fitlife"
                 android:padding="16dp">
 
+                <!-- TÍTULO PRINCIPAL -->
                 <TextView
-                    android:id="@+id/tvTituloPanelUsuario"
+                    android:id="@+id/tvHeaderTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
-                    android:text="Panel de Usuario"
+                    android:layout_marginTop="12dp"
+                    android:text="Mis Rutinas"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
+                <!-- MENSAJE -->
                 <TextView
-                    android:id="@+id/tvSaludoUsuario"
+                    android:id="@+id/tvHeaderSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_marginTop="16dp"
-                    android:text="Hola, Usuario 👋"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tvMensajeDia"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/tvSaludoUsuario"
-                    android:layout_marginTop="4dp"
+                    android:layout_below="@id/tvHeaderTitle"
+                    android:layout_centerHorizontal="true"
                     android:text="¡Hagamos de hoy un día increíble!"
                     android:textColor="@android:color/white"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
 
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- TÍTULO DE LA PANTALLA -->
-        <TextView
-            android:id="@+id/screen_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Mis Rutinas"
-            android:textColor="#333333"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardHeaderUsuario" />
-
+        <!-- SUBTÍTULO DE PANTALLA -->
         <TextView
             android:id="@+id/screen_subtitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="Gestiona tus hábitos diarios y programas"
             android:textColor="#777777"
             android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardHeaderRutinas"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/screen_title" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- RecyclerView para la Lista de Rutinas -->
+        <!-- LISTA DE RUTINAS -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/routines_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:clipToPadding="false"
-            android:paddingStart="16dp"
             android:paddingTop="16dp"
-            android:paddingEnd="16dp"
             android:paddingBottom="96dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/screen_subtitle"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:listitem="@layout/item_routine_management" />
 
-        <!-- Botón de Acción Flotante (FAB) para Agregar Rutina -->
+        <!-- FAB -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add_routine"
             android:layout_width="wrap_content"
