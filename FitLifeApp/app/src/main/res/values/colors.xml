@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#FF000000</color>
-<<<<<<< HEAD
     <color name="gray">#5B5A5A</color>
     <color name="fitlife_green">#3DDC84</color>
     <color name="fitlife_blue">#4285F4</color> <color name="light_gray_bg">#F5F5F5</color>
@@ -11,7 +10,4 @@
     <color name="red">#E40E0E</color>
 
 
-=======
-    <color name="white">#FFFFFFFF</color>
->>>>>>> 4375b5de29e512055b802295b170935e5c980609
 </resources>

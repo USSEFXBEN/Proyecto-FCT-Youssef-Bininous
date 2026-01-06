@@ -1,9 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-<<<<<<< HEAD
     id("com.google.gms.google-services")
-=======
->>>>>>> 4375b5de29e512055b802295b170935e5c980609
 }
 
 android {
@@ -27,10 +24,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-<<<<<<< HEAD
             signingConfig = signingConfigs.getByName("debug")
-=======
->>>>>>> 4375b5de29e512055b802295b170935e5c980609
         }
     }
     compileOptions {
@@ -50,7 +44,6 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.fragment)
-<<<<<<< HEAD
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
@@ -68,14 +61,6 @@ dependencies {
 
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
-<<<<<<< HEAD
-=======
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
->>>>>>> 4375b5de29e512055b802295b170935e5c980609
-=======
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
->>>>>>> 05d9fcb0ff3551ff86c8c40a8b880943640081d5
 }

@@ -1,0 +1,4 @@
+# Firebase / Google Cloud secrets
+fitlife-seed/
+serviceAccountKey.json
+*.json

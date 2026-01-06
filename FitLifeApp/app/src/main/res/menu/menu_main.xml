@@ -1,11 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-<<<<<<< HEAD
     tools:context="com.example.fitlifeapp.view.MainActivity">
-=======
-    tools:context="com.example.fitlifeapp.MainActivity">
->>>>>>> 4375b5de29e512055b802295b170935e5c980609
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

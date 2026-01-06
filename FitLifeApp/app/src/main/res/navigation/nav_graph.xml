@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-<<<<<<< HEAD
     app:startDestination="@id/loginFragment">
 
     <!-- LOGIN -->
@@ -84,33 +83,6 @@
             app:destination="@id/editarRutinaFragment" />
     </fragment>
 
-<<<<<<< HEAD
-=======
-    app:startDestination="@id/FirstFragment">
-
-    <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.example.fitlifeapp.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.fitlifeapp.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
-        <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
-    </fragment>
->>>>>>> 4375b5de29e512055b802295b170935e5c980609
-</navigation>
-=======
     <!-- CREAR RUTINA -->
     <fragment
         android:id="@+id/crearRutinaFragment"
@@ -195,4 +167,3 @@
     </fragment>
 
 </navigation>
->>>>>>> 05d9fcb0ff3551ff86c8c40a8b880943640081d5
