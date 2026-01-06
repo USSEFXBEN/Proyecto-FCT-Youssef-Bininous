@@ -1,210 +1,175 @@
 package com.example.fitlifeapp.view;
 
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.fitlifeapp.R;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class ProgresoSemanalFragment extends Fragment {
 
-    private TextView tvRacha, tvTotalRutinas, tvLogros;
+    private BarChart barChart;
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
 
-    private View[] bars = new View[7];
-    private int[] weeklyValues = new int[]{8, 6, 9, 7, 10, 5, 4}; // ejemplo
-    private int maxBarValue = 10; // para escalar las barras
-
-    private int[] monthlyValues = new int[]{65, 72, 68, 80}; // porcentajes ejemplo
-
-    public ProgresoSemanalFragment() {
-        // Required empty constructor
-    }
+    private final SimpleDateFormat sdf =
+            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_progreso_semanal, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_progreso_semanal, container, false);
+
+        barChart = view.findViewById(R.id.barChartWeekly);
+
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        configurarGrafico();
+        cargarDatos();
+
+        return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    // ---------------- CONFIGURACIÓN VISUAL ----------------
 
-        tvRacha = view.findViewById(R.id.tvRacha);
-        tvTotalRutinas = view.findViewById(R.id.tvTotalRutinas);
-        tvLogros = view.findViewById(R.id.tvLogros);
+    private void configurarGrafico() {
+        barChart.getDescription().setEnabled(false);
+        barChart.getLegend().setEnabled(false);
 
-        // barras
-        bars[0] = view.findViewById(R.id.bar0);
-        bars[1] = view.findViewById(R.id.bar1);
-        bars[2] = view.findViewById(R.id.bar2);
-        bars[3] = view.findViewById(R.id.bar3);
-        bars[4] = view.findViewById(R.id.bar4);
-        bars[5] = view.findViewById(R.id.bar5);
-        bars[6] = view.findViewById(R.id.bar6);
+        barChart.setDrawGridBackground(false);
+        barChart.setDrawValueAboveBar(true);
+        barChart.setFitBars(true);
 
-        cargarResumen();
-        renderWeeklyBars();
-        addTrendView(view);
-    }
+        // EJE X
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
 
-    private void cargarResumen() {
-        // ejemplo de datos (luego vendrán de base/datos)
-        tvRacha.setText("7 días");
-        tvTotalRutinas.setText("156");
-        tvLogros.setText("12");
-    }
-
-    private void renderWeeklyBars() {
-        // altura máxima disponible (en dp) para la barra
-        float maxBarDp = 120f; // corresponderá a value == maxBarValue
-        int maxBarPx = dpToPx(requireContext(), maxBarDp);
-
-        for (int i = 0; i < bars.length; i++) {
-            View bar = bars[i];
-            int value = 0;
-            if (i < weeklyValues.length) value = weeklyValues[i];
-
-            int heightPx = (int) ((value / (float) maxBarValue) * maxBarPx);
-            if (heightPx < dpToPx(requireContext(), 6)) heightPx = dpToPx(requireContext(), 6); // mínimo visible
-
-            ViewGroup.LayoutParams lp = bar.getLayoutParams();
-            lp.height = heightPx;
-            bar.setLayoutParams(lp);
-        }
-    }
-
-    private void addTrendView(View root) {
-        FrameLayout container = root.findViewById(R.id.trend_card);
-        TrendView trend = new TrendView(requireContext(), monthlyValues);
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        );
-        trend.setLayoutParams(lp);
-        container.addView(trend);
-    }
-
-    private static int dpToPx(Context c, float dp) {
-        return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, dp, c.getResources().getDisplayMetrics());
-    }
-
-    /**
-     * View personalizado que dibuja una línea simple y puntos (tendencia mensual).
-     */
-    private static class TrendView extends View {
-        private Paint linePaint;
-        private Paint pointPaint;
-        private Paint gridPaint;
-        private Paint textPaint;
-        private Path path;
-        private int[] values;
-
-        public TrendView(Context context, int[] values) {
-            super(context);
-            this.values = values != null ? values : new int[]{0,0,0,0};
-            init();
-        }
-
-        private void init() {
-            linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            linePaint.setStyle(Paint.Style.STROKE);
-            linePaint.setStrokeWidth(dpToPx(getContext(), 2));
-            linePaint.setColor(0xFF2F8EF8); // azul
-
-            pointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            pointPaint.setStyle(Paint.Style.FILL);
-            pointPaint.setColor(0xFF2F8EF8);
-
-            gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            gridPaint.setStyle(Paint.Style.STROKE);
-            gridPaint.setStrokeWidth(1f);
-            gridPaint.setColor(0xFFE0E6EF);
-
-            textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setTextSize(dpToPx(getContext(), 11));
-            textPaint.setColor(0xFF666666);
-
-            path = new Path();
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-
-            int w = getWidth();
-            int h = getHeight();
-
-            int paddingLeft = dpToPx(getContext(), 12);
-            int paddingRight = dpToPx(getContext(), 12);
-            int paddingTop = dpToPx(getContext(), 16);
-            int paddingBottom = dpToPx(getContext(), 28);
-
-            int drawW = w - paddingLeft - paddingRight;
-            int drawH = h - paddingTop - paddingBottom;
-
-            // grid horizontal (4 líneas)
-            for (int i = 0; i <= 4; i++) {
-                float y = paddingTop + (i * (drawH / 4f));
-                canvas.drawLine(paddingLeft, y, paddingLeft + drawW, y, gridPaint);
-            }
-
-            // points and line
-            int n = values.length;
-            if (n == 0) return;
-
-            path.reset();
-            for (int i = 0; i < n; i++) {
-                float fractionX = (i / (float) (Math.max(1, n - 1)));
-                float x = paddingLeft + fractionX * drawW;
-                float val = values[i] / 100f; // percentages
-                float y = paddingTop + (1f - val) * drawH;
-
-                if (i == 0) {
-                    path.moveTo(x, y);
-                } else {
-                    path.lineTo(x, y);
+        xAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                switch ((int) value) {
+                    case 0: return "Mon";
+                    case 1: return "Tue";
+                    case 2: return "Wed";
+                    case 3: return "Thu";
+                    case 4: return "Fri";
+                    case 5: return "Sat";
+                    case 6: return "Sun";
+                    default: return "";
                 }
             }
+        });
 
-            // draw line and points
-            canvas.drawPath(path, linePaint);
-            for (int i = 0; i < n; i++) {
-                float fractionX = (i / (float) (Math.max(1, n - 1)));
-                float x = paddingLeft + fractionX * drawW;
-                float val = values[i] / 100f;
-                float y = paddingTop + (1f - val) * drawH;
-                canvas.drawCircle(x, y, dpToPx(getContext(), 3), pointPaint);
-            }
+        // EJE Y IZQUIERDO
+        YAxis leftAxis = barChart.getAxisLeft();
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setGranularity(1f);
+        leftAxis.setDrawGridLines(true);
 
-            // labels W1...Wn
-            for (int i = 0; i < n; i++) {
-                float fractionX = (i / (float) (Math.max(1, n - 1)));
-                float x = paddingLeft + fractionX * drawW;
-                String label = "W" + (i + 1);
-                float textWidth = textPaint.measureText(label);
-                canvas.drawText(label, x - textWidth / 2f, h - dpToPx(getContext(), 8), textPaint);
-            }
+        // EJE Y DERECHO DESACTIVADO
+        barChart.getAxisRight().setEnabled(false);
+    }
 
-            // simple percentage labels
-            canvas.drawText("0", paddingLeft - dpToPx(getContext(), 6), paddingTop + drawH, textPaint);
-            canvas.drawText("100", paddingLeft - dpToPx(getContext(), 22), paddingTop + dpToPx(getContext(), 6), textPaint);
+    // ---------------- CARGA DE DATOS ----------------
+
+    private void cargarDatos() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
+
+        String uid = user.getUid();
+
+        Map<Integer, Integer> conteo = new HashMap<>();
+        for (int i = 0; i < 7; i++) {
+            conteo.put(i, 0);
         }
+
+        db.collection("progress")
+                .whereEqualTo("userId", uid)
+                .whereEqualTo("estado", "completado")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        String fecha = doc.getString("fecha");
+                        Integer dia = obtenerIndiceDia(fecha);
+                        if (dia != null) {
+                            conteo.put(dia, conteo.get(dia) + 1);
+                        }
+                    }
+                    pintarGrafico(conteo);
+                });
+    }
+
+    private Integer obtenerIndiceDia(String fecha) {
+        try {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(sdf.parse(fecha));
+            int day = cal.get(Calendar.DAY_OF_WEEK);
+            switch (day) {
+                case Calendar.MONDAY: return 0;
+                case Calendar.TUESDAY: return 1;
+                case Calendar.WEDNESDAY: return 2;
+                case Calendar.THURSDAY: return 3;
+                case Calendar.FRIDAY: return 4;
+                case Calendar.SATURDAY: return 5;
+                case Calendar.SUNDAY: return 6;
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    // ---------------- PINTADO ----------------
+
+    private void pintarGrafico(Map<Integer, Integer> conteo) {
+        ArrayList<BarEntry> entries = new ArrayList<>();
+
+        for (int i = 0; i < 7; i++) {
+            entries.add(new BarEntry(i, conteo.get(i)));
+        }
+
+        BarDataSet dataSet =
+                new BarDataSet(entries, "Rutinas completadas");
+
+        dataSet.setColor(Color.parseColor("#4CD97B"));
+        dataSet.setValueTextSize(12f);
+        dataSet.setValueTextColor(Color.DKGRAY);
+
+        BarData data = new BarData(dataSet);
+        data.setBarWidth(0.6f);
+
+        barChart.setData(data);
+        barChart.invalidate();
+        barChart.animateY(800);
     }
 }

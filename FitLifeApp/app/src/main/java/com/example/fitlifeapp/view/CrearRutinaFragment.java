@@ -15,12 +15,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.fitlifeapp.R;
 import com.example.fitlifeapp.model.Rutina;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
@@ -35,11 +35,10 @@ public class CrearRutinaFragment extends Fragment {
 
     private CheckBox cbLunes, cbMartes, cbMiercoles, cbJueves, cbViernes, cbSabado, cbDomingo;
 
-    private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private String userId;
 
-    private String horaSeleccionada = ""; // formato "HH:mm"
+    private String horaSeleccionada = "";
 
     @Nullable
     @Override
@@ -49,17 +48,15 @@ public class CrearRutinaFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_crear_rutina, container, false);
 
-        // Firebase
-        mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        if (mAuth.getCurrentUser() == null) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Toast.makeText(getContext(), "Usuario no logueado", Toast.LENGTH_SHORT).show();
             return view;
         }
-        userId = mAuth.getCurrentUser().getUid();
 
-        // === VISTAS ===
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         etNombre = view.findViewById(R.id.etNombreRutina);
         etDescripcion = view.findViewById(R.id.etDescripcionRutina);
         tvHoraSeleccionada = view.findViewById(R.id.tvHoraSeleccionada);
@@ -75,54 +72,31 @@ public class CrearRutinaFragment extends Fragment {
         cbSabado = view.findViewById(R.id.cbSabado);
         cbDomingo = view.findViewById(R.id.cbDomingo);
 
-        // Seguridad extra: si algo es null, mejor avisar que crashear
-        if (etNombre == null || etDescripcion == null) {
-            Toast.makeText(getContext(),
-                    "Error de vistas: revisa que el layout tenga etNombreRutina y etDescripcionRutina",
-                    Toast.LENGTH_LONG).show();
-        }
-
-        // === LISTENERS ===
         btnSeleccionarHora.setOnClickListener(v -> mostrarTimePicker());
-
         btnGuardar.setOnClickListener(v -> guardarRutina());
-
-        btnCancelar.setOnClickListener(v -> {
-            NavController navController =
-                    Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-            navController.popBackStack(); // vuelve atrás a la lista de rutinas
-        });
+        btnCancelar.setOnClickListener(v ->
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
+                        .popBackStack());
 
         return view;
     }
 
     private void mostrarTimePicker() {
-        final Calendar c = Calendar.getInstance();
-        int hora = c.get(Calendar.HOUR_OF_DAY);
-        int minuto = c.get(Calendar.MINUTE);
+        Calendar c = Calendar.getInstance();
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(
+        new TimePickerDialog(
                 getContext(),
                 (view, hourOfDay, minute) -> {
                     horaSeleccionada = String.format("%02d:%02d", hourOfDay, minute);
                     tvHoraSeleccionada.setText(horaSeleccionada);
                 },
-                hora,
-                minuto,
+                c.get(Calendar.HOUR_OF_DAY),
+                c.get(Calendar.MINUTE),
                 true
-        );
-
-        timePickerDialog.show();
+        ).show();
     }
 
     private void guardarRutina() {
-        // Por si acaso siguen siendo null, evitamos crash
-        if (etNombre == null || etDescripcion == null) {
-            Toast.makeText(getContext(),
-                    "No se pudieron cargar los campos de texto (revisa el layout)",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         String nombre = etNombre.getText().toString().trim();
         String descripcion = etDescripcion.getText().toString().trim();
@@ -132,7 +106,6 @@ public class CrearRutinaFragment extends Fragment {
             return;
         }
 
-        // Mapa de días activos
         Map<String, Boolean> diasActivos = new HashMap<>();
         if (cbLunes.isChecked()) diasActivos.put("lunes", true);
         if (cbMartes.isChecked()) diasActivos.put("martes", true);
@@ -142,9 +115,10 @@ public class CrearRutinaFragment extends Fragment {
         if (cbSabado.isChecked()) diasActivos.put("sabado", true);
         if (cbDomingo.isChecked()) diasActivos.put("domingo", true);
 
-        // Crear objeto Rutina (id = null, Firestore lo genera)
+        String rutinaId = db.collection("routines").document().getId();
+
         Rutina rutina = new Rutina(
-                null,
+                rutinaId,
                 userId,
                 nombre,
                 descripcion,
@@ -153,16 +127,22 @@ public class CrearRutinaFragment extends Fragment {
         );
 
         db.collection("routines")
-                .add(rutina)
-                .addOnSuccessListener(ref -> {
+                .document(rutinaId)
+                .set(rutina)
+                .addOnSuccessListener(unused -> {
+
+                    // 🔥 INCREMENTAR CONTADOR
+                    db.collection("users")
+                            .document(userId)
+                            .update("totalRutinas", FieldValue.increment(1));
+
                     Toast.makeText(getContext(), "Rutina creada", Toast.LENGTH_SHORT).show();
-                    NavController navController =
-                            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-                    navController.navigate(R.id.action_crearRutinaFragment_to_nav_routines);
+                    Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
+                            .navigate(R.id.action_crearRutinaFragment_to_nav_routines);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(getContext(),
-                                "Error al crear rutina: " + e.getMessage(),
+                                "Error al crear rutina",
                                 Toast.LENGTH_SHORT).show());
     }
 }

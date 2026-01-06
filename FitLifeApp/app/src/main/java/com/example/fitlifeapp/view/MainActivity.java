@@ -4,9 +4,13 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -16,6 +20,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
+    private static final int NOTIFICATION_PERMISSION_CODE = 1001;
+
     private BottomNavigationView bottomNavigationView;
 
     @Override
@@ -23,35 +30,89 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        configurarNavegacion();
         solicitarPermisoNotificaciones();
+    }
+
+    /**
+     * Configura el BottomNavigation y controla cuándo se muestra
+     */
+    private void configurarNavegacion() {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         NavHostFragment navHostFragment =
-                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+                (NavHostFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.nav_host_fragment);
 
-        if (navHostFragment == null) return;
+        if (navHostFragment == null) {
+            Log.e(TAG, "NavHostFragment no encontrado");
+            return;
+        }
 
         NavController navController = navHostFragment.getNavController();
-
-        // conectar BottomNavigationView con NavController
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
-        // mostrar/ocultar bottom según destino
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            int id = destination.getId();
-            if (id == R.id.loginFragment || id == R.id.registrarFragment) {
-                bottomNavigationView.setVisibility(View.GONE);
-            } else {
-                bottomNavigationView.setVisibility(View.VISIBLE);
-            }
-        });
+        // 🔥 CONTROL DE VISIBILIDAD DEL MENÚ
+        navController.addOnDestinationChangedListener(
+                (controller, destination, arguments) -> {
+
+                    int id = destination.getId();
+
+                    if (id == R.id.loginFragment
+                            || id == R.id.registrarFragment
+                            || id == R.id.nav_admin) {
+
+                        bottomNavigationView.setVisibility(View.GONE);
+
+                    } else {
+                        bottomNavigationView.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
     }
 
+    /**
+     * Solicita el permiso POST_NOTIFICATIONS en Android 13+
+     */
     private void solicitarPermisoNotificaciones() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_CODE
+                );
+
+            } else {
+                Log.d(TAG, "Permiso de notificaciones ya concedido");
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                Log.d(TAG, "Permiso de notificaciones concedido");
+
+            } else {
+                Log.w(TAG, "Permiso de notificaciones DENEGADO");
             }
         }
     }

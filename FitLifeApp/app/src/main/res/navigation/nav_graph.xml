@@ -16,17 +16,15 @@
             android:id="@+id/action_loginFragment_to_registrarFragment"
             app:destination="@id/registrarFragment" />
 
+        <!-- Usuario normal -->
         <action
             android:id="@+id/action_loginFragment_to_dashboardFragment"
             app:destination="@id/nav_home" />
 
+        <!-- Admin -->
         <action
-            android:id="@+id/action_loginFragment_to_routinesFragment"
-            app:destination="@id/nav_routines" />
-
-        <action
-            android:id="@+id/action_loginFragment_to_nav_reminders"
-            app:destination="@id/nav_reminders" />
+            android:id="@+id/action_loginFragment_to_adminFragment"
+            app:destination="@id/nav_admin" />
     </fragment>
 
     <!-- REGISTRAR -->
@@ -43,26 +41,14 @@
         <action
             android:id="@+id/action_registrarFragment_to_dashboardFragment"
             app:destination="@id/nav_home" />
-
-        <action
-            android:id="@+id/action_registrarFragment_to_routinesFragment"
-            app:destination="@id/nav_routines" />
-
-        <action
-            android:id="@+id/action_registrarFragment_to_nav_reminders"
-            app:destination="@id/nav_reminders" />
     </fragment>
 
-    <!-- DASHBOARD -->
+    <!-- DASHBOARD USUARIO -->
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.fitlifeapp.view.DashboardFragment"
         android:label="Dashboard"
         tools:layout="@layout/fragment_dashboard">
-
-        <action
-            android:id="@+id/action_dashboardFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
 
         <action
             android:id="@+id/action_dashboardFragment_to_routinesFragment"
@@ -71,29 +57,27 @@
         <action
             android:id="@+id/action_dashboardFragment_to_nav_reminders"
             app:destination="@id/nav_reminders" />
+
+        <action
+            android:id="@+id/action_dashboardFragment_to_nav_progress"
+            app:destination="@id/nav_progress" />
+
+        <action
+            android:id="@+id/action_dashboardFragment_to_nav_profile"
+            app:destination="@id/nav_profile" />
     </fragment>
 
     <!-- RUTINAS -->
     <fragment
         android:id="@+id/nav_routines"
-        android:name="com.example.fitlifeapp.view.RoutinesFragment"
+        android:name="com.example.fitlifeapp.view.RutinaFragment"
         android:label="Rutinas"
         tools:layout="@layout/fragment_rutinas">
 
         <action
-            android:id="@+id/action_routinesFragment_to_dashboardFragment"
-            app:destination="@id/nav_home" />
-
-        <action
-            android:id="@+id/action_routinesFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
-
-        <!-- Crear Rutina -->
-        <action
             android:id="@+id/action_nav_routines_to_crearRutinaFragment"
             app:destination="@id/crearRutinaFragment" />
 
-        <!-- Editar Rutina -->
         <action
             android:id="@+id/action_nav_routines_to_editarRutinaFragment"
             app:destination="@id/editarRutinaFragment" />
@@ -134,7 +118,6 @@
         android:label="Recordatorios"
         tools:layout="@layout/fragment_recordatorios">
 
-        <!-- Crear Recordatorio -->
         <action
             android:id="@+id/action_nav_reminders_to_crearRecordatorio"
             app:destination="@id/crearRecordatorioFragment" />
@@ -152,10 +135,35 @@
             app:destination="@id/nav_reminders" />
     </fragment>
 
-    <!-- PROGRESO (nuevo) -->
+    <!-- PROGRESO -->
     <fragment
         android:id="@+id/nav_progress"
         android:name="com.example.fitlifeapp.view.ProgresoSemanalFragment"
         android:label="Progreso"
         tools:layout="@layout/fragment_progreso_semanal" />
+
+    <!-- PERFIL -->
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.fitlifeapp.view.PerfilFragment"
+        android:label="Perfil"
+        tools:layout="@layout/fragment_perfil">
+
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+    <!-- ADMIN -->
+    <fragment
+        android:id="@+id/nav_admin"
+        android:name="com.example.fitlifeapp.view.AdminDashboardFragment"
+        android:label="Admin"
+        tools:layout="@layout/fragment_dashboard_admin">
+
+        <action
+            android:id="@+id/action_adminFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
 </navigation>
