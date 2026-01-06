@@ -1,44 +1,62 @@
-CREATE TABLE users (
-    id_usuario SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    rol VARCHAR(50) NOT NULL
-);
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+  Timestamp
+} from "firebase/firestore";
 
-CREATE TABLE routines (
-    id_rutina SERIAL PRIMARY KEY,
-    id_usuario INT NOT NULL REFERENCES users(id_usuario),
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT,
-    horario TIME,
-    dias_activos VARCHAR(100),
-    completado BOOLEAN DEFAULT FALSE
-);
+const firebaseConfig = {
+  // TU CONFIG DE FIREBASE
+};
 
-CREATE TABLE habits (
-    id_habito SERIAL PRIMARY KEY,
-    id_usuario INT NOT NULL REFERENCES users(id_usuario),
-    tipo VARCHAR(50),
-    fecha DATE NOT NULL,
-    completado BOOLEAN DEFAULT FALSE
-);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-CREATE TABLE reminders (
-    id_recordatorio SERIAL PRIMARY KEY,
-    id_usuario INT NOT NULL REFERENCES users(id_usuario),
-    id_rutina INT NOT NULL REFERENCES routines(id_rutina),
-    hora TIME,
-    mensaje TEXT
-);
+async function seed() {
 
-INSERT INTO users (nombre, email, rol) 
-VALUES ('Youssef Bininous', 'admin@example.com', 'admin');
+  // ---------- USERS ----------
+  const adminId = "ADMIN_UID_EJEMPLO";
 
-INSERT INTO routines (id_usuario, nombre, descripcion, horario, dias_activos, completado)
-VALUES (1, 'Revisión del sistema', 'Ver estadísticas y usuarios', '09:00', 'Lunes,Miércoles,Viernes', FALSE);
+  await setDoc(doc(db, "users", adminId), {
+    nombre: "Youssef Bininous",
+    email: "admin@example.com",
+    rol: "admin",
+    createdAt: Timestamp.now()
+  });
 
-INSERT INTO habits (id_usuario, tipo, fecha, completado)
-VALUES (1, 'Supervisión', '2025-10-24', FALSE);
+  // ---------- ROUTINES ----------
+  const rutinaRef = await addDoc(collection(db, "routines"), {
+    userId: adminId,
+    nombre: "Revisión del sistema",
+    descripcion: "Ver estadísticas y usuarios",
+    horaRecordatorio: "09:00",
+    diasActivos: {
+      lunes: true,
+      miercoles: true,
+      viernes: true
+    }
+  });
 
-INSERT INTO reminders (id_usuario, id_rutina, hora, mensaje)
-VALUES (1, 1, '09:00', '¡Revisar usuarios y estadísticas!');
+  // ---------- PROGRESS ----------
+  await addDoc(collection(db, "progress"), {
+    userId: adminId,
+    rutinaId: rutinaRef.id,
+    fecha: "2025-10-24",
+    estado: "pendiente"
+  });
+
+  // ---------- RECORDATORIOS ----------
+  await addDoc(collection(db, "recordatorios"), {
+    userId: adminId,
+    rutinaId: rutinaRef.id,
+    hora: "09:00",
+    mensaje: "¡Revisar usuarios y estadísticas!"
+  });
+
+  console.log("✅ Seed completado correctamente");
+}
+
+seed();
