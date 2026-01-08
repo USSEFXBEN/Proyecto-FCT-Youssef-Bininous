@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,8 +15,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fitlifeapp.R;
-import com.example.fitlifeapp.RutinaAdapter;
+import com.example.fitlifeapp.Adaptadores.RutinaAdapter;
+import com.example.fitlifeapp.model.Recordatorio;
 import com.example.fitlifeapp.model.Rutina;
+import com.example.fitlifeapp.notificacion.ReminderScheduler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
@@ -132,54 +134,79 @@ public class RutinaFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show());
     }
 
+    // 🗑️ ELIMINAR RUTINA + PROGRESO + RECORDATORIOS
     private void eliminarRutina(Rutina rutina) {
+
         if (rutina.getId() == null) return;
 
-        db.collection("progress")
-                .whereEqualTo("rutinaId", rutina.getId())
-                .whereEqualTo("userId", userId) // 🔥 CLAVE
+        String tituloRecordatorio = "Rutina: " + rutina.getNombre();
+
+        // 1️⃣ Buscar recordatorios asociados a esta rutina
+        db.collection("recordatorios")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("titulo", tituloRecordatorio)
                 .get()
-                .addOnSuccessListener(progressSnapshots -> {
+                .addOnSuccessListener(recordatoriosSnapshot -> {
 
-                    WriteBatch batch = db.batch();
+                    // 2️⃣ Buscar progreso
+                    db.collection("progress")
+                            .whereEqualTo("rutinaId", rutina.getId())
+                            .whereEqualTo("userId", userId)
+                            .get()
+                            .addOnSuccessListener(progressSnapshots -> {
 
-                    for (QueryDocumentSnapshot doc : progressSnapshots) {
-                        batch.delete(doc.getReference());
-                    }
+                                WriteBatch batch = db.batch();
 
-                    batch.delete(
-                            db.collection("routines").document(rutina.getId())
-                    );
+                                // 🔔 Cancelar y borrar recordatorios
+                                for (QueryDocumentSnapshot doc : recordatoriosSnapshot) {
+                                    Recordatorio r = doc.toObject(Recordatorio.class);
+                                    r.setId(doc.getId());
 
-                    batch.commit()
-                            .addOnSuccessListener(unused -> {
+                                    ReminderScheduler.cancelarRecordatorio(
+                                            requireContext().getApplicationContext(),
+                                            r
+                                    );
 
-                                db.collection("users")
-                                        .document(userId)
-                                        .update("totalRutinas", FieldValue.increment(-1));
+                                    batch.delete(doc.getReference());
+                                }
 
-                                listaRutinas.remove(rutina);
-                                adapter.notifyDataSetChanged();
+                                // 🗑️ Borrar progreso
+                                for (QueryDocumentSnapshot doc : progressSnapshots) {
+                                    batch.delete(doc.getReference());
+                                }
 
-                                Toast.makeText(
-                                        getContext(),
-                                        "Rutina y progreso eliminados",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(
-                                            getContext(),
-                                            "Error al eliminar datos",
-                                            Toast.LENGTH_SHORT
-                                    ).show());
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(
-                                getContext(),
-                                "Error al buscar progreso",
-                                Toast.LENGTH_SHORT
-                        ).show());
+                                // 🗑️ Borrar rutina
+                                batch.delete(
+                                        db.collection("routines").document(rutina.getId())
+                                );
+
+                                // 3️⃣ Ejecutar borrado
+                                batch.commit()
+                                        .addOnSuccessListener(unused -> {
+
+                                            db.collection("users")
+                                                    .document(userId)
+                                                    .update(
+                                                            "totalRutinas",
+                                                            FieldValue.increment(-1)
+                                                    );
+
+                                            listaRutinas.remove(rutina);
+                                            adapter.notifyDataSetChanged();
+
+                                            Toast.makeText(
+                                                    getContext(),
+                                                    "Rutina y recordatorios eliminados",
+                                                    Toast.LENGTH_SHORT
+                                            ).show();
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(
+                                                        getContext(),
+                                                        "Error al eliminar datos",
+                                                        Toast.LENGTH_SHORT
+                                                ).show());
+                            });
+                });
     }
-
 }

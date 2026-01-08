@@ -19,7 +19,7 @@
 
         <!-- MAIN ACTIVITY -->
         <activity
-            android:name=".view.MainActivity"
+            android:name=".vistas.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.FitLifeApp">
 
@@ -31,7 +31,7 @@
 
 
         <receiver
-            android:name=".controller.ReminderReceiver"
+            android:name=".notificacion.ReminderReceiver"
             android:exported="false" />
 
     </application>

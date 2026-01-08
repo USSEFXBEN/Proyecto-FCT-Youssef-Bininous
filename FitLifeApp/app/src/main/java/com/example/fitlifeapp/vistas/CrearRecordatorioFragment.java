@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.fitlifeapp.R;
-import com.example.fitlifeapp.controller.ReminderScheduler;
+import com.example.fitlifeapp.notificacion.ReminderScheduler;
 import com.example.fitlifeapp.model.Recordatorio;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

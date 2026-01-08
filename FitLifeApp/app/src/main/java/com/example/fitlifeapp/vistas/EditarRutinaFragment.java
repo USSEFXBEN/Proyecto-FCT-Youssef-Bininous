@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
 import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
@@ -21,7 +21,6 @@ import androidx.navigation.Navigation;
 
 import com.example.fitlifeapp.R;
 import com.example.fitlifeapp.model.Rutina;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 

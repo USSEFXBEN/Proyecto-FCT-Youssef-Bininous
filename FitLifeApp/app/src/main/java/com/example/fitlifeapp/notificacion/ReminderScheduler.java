@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.controller;
+package com.example.fitlifeapp.notificacion;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;

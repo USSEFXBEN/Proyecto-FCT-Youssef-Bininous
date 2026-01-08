@@ -9,7 +9,7 @@
     android:fillViewport="true"
     android:background="@color/white"
     android:paddingTop="28dp"
-    tools:context=".view.RecordatoriosFragment">
+    tools:context=".vistas.RecordatoriosFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

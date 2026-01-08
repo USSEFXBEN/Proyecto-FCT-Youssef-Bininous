@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
 import android.graphics.Color;
 import android.os.Bundle;

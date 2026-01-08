@@ -1,12 +1,10 @@
-package com.example.fitlifeapp.controller;
+package com.example.fitlifeapp.notificacion;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.example.fitlifeapp.Utils.NotificationUtils;
 
 public class ReminderReceiver extends BroadcastReceiver {
 

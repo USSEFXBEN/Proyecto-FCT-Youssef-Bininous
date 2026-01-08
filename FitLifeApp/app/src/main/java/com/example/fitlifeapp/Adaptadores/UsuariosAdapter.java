@@ -1,4 +1,4 @@
-package com.example.fitlifeapp;
+package com.example.fitlifeapp.Adaptadores;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,16 +8,24 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fitlifeapp.R;
 import com.example.fitlifeapp.model.Usuario;
 
 import java.util.List;
 
 public class UsuariosAdapter extends RecyclerView.Adapter<UsuariosAdapter.UsuarioViewHolder> {
 
-    private List<Usuario> listaUsuarios;
+    public interface OnUsuarioLongClickListener {
+        void onLongClick(Usuario usuario);
+    }
 
-    public UsuariosAdapter(List<Usuario> listaUsuarios) {
+    private List<Usuario> listaUsuarios;
+    private OnUsuarioLongClickListener listener;
+
+    public UsuariosAdapter(List<Usuario> listaUsuarios,
+                           OnUsuarioLongClickListener listener) {
         this.listaUsuarios = listaUsuarios;
+        this.listener = listener;
     }
 
     @NonNull
@@ -38,6 +46,14 @@ public class UsuariosAdapter extends RecyclerView.Adapter<UsuariosAdapter.Usuari
 
         int total = usuario.getTotalRutinas();
         holder.tvRutinas.setText(total + (total == 1 ? " rutina" : " rutinas"));
+
+        // 👑 LONG CLICK ADMIN
+        holder.itemView.setOnLongClickListener(v -> {
+            if (listener != null) {
+                listener.onLongClick(usuario);
+            }
+            return true;
+        });
     }
 
     @Override

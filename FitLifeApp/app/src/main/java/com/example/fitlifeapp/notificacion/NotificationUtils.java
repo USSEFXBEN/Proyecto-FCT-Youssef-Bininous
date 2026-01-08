@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.Utils;
+package com.example.fitlifeapp.notificacion;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

@@ -8,7 +8,7 @@
     <!-- LOGIN -->
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.fitlifeapp.view.LoginFragment"
+        android:name="com.example.fitlifeapp.vistas.LoginFragment"
         android:label="Login"
         tools:layout="@layout/login_fragment">
 
@@ -30,7 +30,7 @@
     <!-- REGISTRAR -->
     <fragment
         android:id="@+id/registrarFragment"
-        android:name="com.example.fitlifeapp.view.RegistrarFragment"
+        android:name="com.example.fitlifeapp.vistas.RegistrarFragment"
         android:label="Registrar"
         tools:layout="@layout/registrar_fragment">
 
@@ -46,7 +46,7 @@
     <!-- DASHBOARD USUARIO -->
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.fitlifeapp.view.DashboardFragment"
+        android:name="com.example.fitlifeapp.vistas.UsuarioDashboardFragment"
         android:label="Dashboard"
         tools:layout="@layout/fragment_dashboard">
 
@@ -70,7 +70,7 @@
     <!-- RUTINAS -->
     <fragment
         android:id="@+id/nav_routines"
-        android:name="com.example.fitlifeapp.view.RutinaFragment"
+        android:name="com.example.fitlifeapp.vistas.RutinaFragment"
         android:label="Rutinas"
         tools:layout="@layout/fragment_rutinas">
 
@@ -86,7 +86,7 @@
     <!-- CREAR RUTINA -->
     <fragment
         android:id="@+id/crearRutinaFragment"
-        android:name="com.example.fitlifeapp.view.CrearRutinaFragment"
+        android:name="com.example.fitlifeapp.vistas.CrearRutinaFragment"
         android:label="Crear Rutina"
         tools:layout="@layout/fragment_crear_rutina">
 
@@ -98,7 +98,7 @@
     <!-- EDITAR RUTINA -->
     <fragment
         android:id="@+id/editarRutinaFragment"
-        android:name="com.example.fitlifeapp.view.EditarRutinaFragment"
+        android:name="com.example.fitlifeapp.vistas.EditarRutinaFragment"
         android:label="Editar Rutina"
         tools:layout="@layout/fragment_editar_rutina">
 
@@ -114,7 +114,7 @@
     <!-- RECORDATORIOS -->
     <fragment
         android:id="@+id/nav_reminders"
-        android:name="com.example.fitlifeapp.view.RecordatoriosFragment"
+        android:name="com.example.fitlifeapp.vistas.RecordatoriosFragment"
         android:label="Recordatorios"
         tools:layout="@layout/fragment_recordatorios">
 
@@ -126,7 +126,7 @@
     <!-- CREAR RECORDATORIO -->
     <fragment
         android:id="@+id/crearRecordatorioFragment"
-        android:name="com.example.fitlifeapp.view.CrearRecordatorioFragment"
+        android:name="com.example.fitlifeapp.vistas.CrearRecordatorioFragment"
         android:label="Crear Recordatorio"
         tools:layout="@layout/fragment_crear_recordatorio">
 
@@ -138,14 +138,14 @@
     <!-- PROGRESO -->
     <fragment
         android:id="@+id/nav_progress"
-        android:name="com.example.fitlifeapp.view.ProgresoSemanalFragment"
+        android:name="com.example.fitlifeapp.vistas.ProgresoSemanalFragment"
         android:label="Progreso"
         tools:layout="@layout/fragment_progreso_semanal" />
 
     <!-- PERFIL -->
     <fragment
         android:id="@+id/nav_profile"
-        android:name="com.example.fitlifeapp.view.PerfilFragment"
+        android:name="com.example.fitlifeapp.vistas.PerfilFragment"
         android:label="Perfil"
         tools:layout="@layout/fragment_perfil">
 
@@ -157,7 +157,7 @@
     <!-- ADMIN -->
     <fragment
         android:id="@+id/nav_admin"
-        android:name="com.example.fitlifeapp.view.AdminDashboardFragment"
+        android:name="com.example.fitlifeapp.vistas.AdminDashboardFragment"
         android:label="Admin"
         tools:layout="@layout/fragment_dashboard_admin">
 

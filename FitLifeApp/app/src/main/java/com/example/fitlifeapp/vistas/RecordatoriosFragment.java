@@ -1,4 +1,4 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fitlifeapp.R;
-import com.example.fitlifeapp.RecordatoriosAdapter;
-import com.example.fitlifeapp.controller.ReminderScheduler;
+import com.example.fitlifeapp.Adaptadores.RecordatoriosAdapter;
+import com.example.fitlifeapp.notificacion.ReminderScheduler;
 import com.example.fitlifeapp.model.Recordatorio;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;

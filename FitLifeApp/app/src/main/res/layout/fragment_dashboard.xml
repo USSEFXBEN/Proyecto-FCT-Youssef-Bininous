@@ -9,7 +9,7 @@
     android:fillViewport="true"
     android:fitsSystemWindows="true"
     android:background="#F5F5F5"
-    tools:context=".view.DashboardFragment">
+    tools:context=".vistas.UsuarioDashboardFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

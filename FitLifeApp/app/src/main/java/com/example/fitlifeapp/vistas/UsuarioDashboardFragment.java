@@ -1,13 +1,10 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fitlifeapp.R;
-import com.example.fitlifeapp.RutinaAdapter;
+import com.example.fitlifeapp.Adaptadores.RutinaAdapter;
 import com.example.fitlifeapp.model.Progreso;
 import com.example.fitlifeapp.model.Rutina;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,9 +33,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class DashboardFragment extends Fragment {
+public class UsuarioDashboardFragment extends Fragment {
 
-    private static final String TAG = "DashboardFragment";
+    private static final String TAG = "UsuarioDashboardFragment";
 
     private TextView tvSaludoUsuario, tvMensajeDia, tvProgresoTexto;
     private RecyclerView rvRutinas;

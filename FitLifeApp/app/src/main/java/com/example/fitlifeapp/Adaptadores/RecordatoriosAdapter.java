@@ -1,4 +1,4 @@
-package com.example.fitlifeapp;
+package com.example.fitlifeapp.Adaptadores;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fitlifeapp.R;
 import com.example.fitlifeapp.model.Recordatorio;
 
 import java.util.List;

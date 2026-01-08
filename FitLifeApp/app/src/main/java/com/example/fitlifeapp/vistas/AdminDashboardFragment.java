@@ -1,5 +1,6 @@
-package com.example.fitlifeapp.view;
+package com.example.fitlifeapp.vistas;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fitlifeapp.R;
-import com.example.fitlifeapp.UsuariosAdapter;
+import com.example.fitlifeapp.Adaptadores.UsuariosAdapter;
 import com.example.fitlifeapp.model.Usuario;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -59,9 +61,12 @@ public class AdminDashboardFragment extends Fragment {
         btnLogout = view.findViewById(R.id.btnAdminLogout);
         rvUsers = view.findViewById(R.id.rvUsers);
 
-        // RecyclerView
         listaUsuarios = new ArrayList<>();
-        usuariosAdapter = new UsuariosAdapter(listaUsuarios);
+
+        usuariosAdapter = new UsuariosAdapter(
+                listaUsuarios,
+                this::mostrarOpcionesAdmin
+        );
 
         rvUsers.setLayoutManager(new LinearLayoutManager(getContext()));
         rvUsers.setAdapter(usuariosAdapter);
@@ -91,31 +96,24 @@ public class AdminDashboardFragment extends Fragment {
 
     private void cargarEstadisticas() {
 
-        // 👤 TOTAL USUARIOS
         db.collection("users")
                 .get()
-                .addOnSuccessListener(snapshot -> {
-                    int totalUsers = snapshot.size();
-                    tvUsers.setText(totalUsers + "\nUsuarios");
-                });
+                .addOnSuccessListener(snapshot ->
+                        tvUsers.setText(snapshot.size() + "\nUsuarios")
+                );
 
-        // 📋 TOTAL RUTINAS (🔥 ESTO ES LO QUE FALTABA)
         db.collection("routines")
                 .get()
-                .addOnSuccessListener(snapshot -> {
-                    int totalRoutines = snapshot.size();
-                    tvRoutines.setText(totalRoutines + "\nRutinas");
-                });
+                .addOnSuccessListener(snapshot ->
+                        tvRoutines.setText(snapshot.size() + "\nRutinas")
+                );
 
-        // ⏰ TOTAL RECORDATORIOS
         db.collection("recordatorios")
                 .get()
-                .addOnSuccessListener(snapshot -> {
-                    int totalReminders = snapshot.size();
-                    tvReminders.setText(totalReminders + "\nRecordatorios");
-                });
+                .addOnSuccessListener(snapshot ->
+                        tvReminders.setText(snapshot.size() + "\nRecordatorios")
+                );
     }
-
 
     private void cargarUsuarios() {
 
@@ -127,7 +125,7 @@ public class AdminDashboardFragment extends Fragment {
 
                     snapshot.forEach(doc -> {
                         Usuario usuario = doc.toObject(Usuario.class);
-                        usuario.setId(doc.getId()); // UID real
+                        usuario.setId(doc.getId());
                         listaUsuarios.add(usuario);
                     });
 
@@ -138,6 +136,77 @@ public class AdminDashboardFragment extends Fragment {
                 .addOnFailureListener(e ->
                         Log.e(TAG, "Error cargando usuarios", e)
                 );
+    }
+
+    // 👑 OPCIONES ADMIN
+    private void mostrarOpcionesAdmin(Usuario usuario) {
+
+        String[] opciones = {
+                usuario.getRol().equals("admin")
+                        ? "Cambiar a usuario"
+                        : "Cambiar a administrador",
+                "Eliminar usuario"
+        };
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(usuario.getNombre())
+                .setItems(opciones, (dialog, which) -> {
+
+                    if (which == 0) {
+                        cambiarRol(usuario);
+                    } else {
+                        confirmarEliminarUsuario(usuario);
+                    }
+                })
+                .show();
+    }
+
+    // 🔁 CAMBIAR ROL
+    private void cambiarRol(Usuario usuario) {
+
+        String nuevoRol =
+                usuario.getRol().equals("admin") ? "user" : "admin";
+
+        db.collection("users")
+                .document(usuario.getId())
+                .update("rol", nuevoRol)
+                .addOnSuccessListener(unused -> {
+                    usuario.setRol(nuevoRol);
+                    usuariosAdapter.notifyDataSetChanged();
+                    Toast.makeText(
+                            getContext(),
+                            "Rol actualizado a " + nuevoRol,
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+    }
+
+    // 🗑️ CONFIRMAR BORRADO
+    private void confirmarEliminarUsuario(Usuario usuario) {
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Eliminar usuario")
+                .setMessage("¿Eliminar definitivamente a " + usuario.getNombre() + "?")
+                .setPositiveButton("Eliminar", (d, w) -> eliminarUsuario(usuario))
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    // ❌ ELIMINAR USUARIO (Firestore)
+    private void eliminarUsuario(Usuario usuario) {
+
+        db.collection("users")
+                .document(usuario.getId())
+                .delete()
+                .addOnSuccessListener(unused -> {
+                    listaUsuarios.remove(usuario);
+                    usuariosAdapter.notifyDataSetChanged();
+                    Toast.makeText(
+                            getContext(),
+                            "Usuario eliminado",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
     }
 
     private void configurarLogout(View view) {
