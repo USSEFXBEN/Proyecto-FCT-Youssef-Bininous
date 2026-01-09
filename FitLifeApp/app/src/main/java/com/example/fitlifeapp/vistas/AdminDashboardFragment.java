@@ -233,19 +233,55 @@ public class AdminDashboardFragment extends Fragment {
      */
     private void eliminarUsuario(Usuario usuario) {
 
+        String uid = usuario.getId();
+
+        // 1️⃣ Borrar rutinas
+        db.collection("routines")
+                .whereEqualTo("userId", uid)
+                .get()
+                .addOnSuccessListener(rutinas -> {
+                    for (var doc : rutinas) {
+                        doc.getReference().delete();
+                    }
+                });
+
+        // 2️⃣ Borrar recordatorios
+        db.collection("recordatorios")
+                .whereEqualTo("userId", uid)
+                .get()
+                .addOnSuccessListener(recordatorios -> {
+                    for (var doc : recordatorios) {
+                        doc.getReference().delete();
+                    }
+                });
+
+        // 3️⃣ Borrar progreso
+        db.collection("progress")
+                .whereEqualTo("userId", uid)
+                .get()
+                .addOnSuccessListener(progress -> {
+                    for (var doc : progress) {
+                        doc.getReference().delete();
+                    }
+                });
+
+        // 4️⃣ Borrar usuario
         db.collection("users")
-                .document(usuario.getId())
+                .document(uid)
                 .delete()
                 .addOnSuccessListener(unused -> {
+
                     listaUsuarios.remove(usuario);
                     usuariosAdapter.notifyDataSetChanged();
+
                     Toast.makeText(
                             getContext(),
-                            "Usuario eliminado",
+                            "Usuario eliminado completamente",
                             Toast.LENGTH_SHORT
                     ).show();
                 });
     }
+
 
     /**
      * Cierra la sesión del administrador y navega
