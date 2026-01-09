@@ -18,6 +18,12 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.fitlifeapp.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+/**
+ * Actividad principal de la aplicación.
+ * Contiene el NavHostFragment y el BottomNavigationView.
+ * También se encarga de solicitar el permiso de notificaciones
+ * en versiones recientes de Android.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -35,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Configura el BottomNavigation y controla cuándo se muestra
+     * Configura la navegación con Navigation Component
+     * y controla la visibilidad del BottomNavigationView
+     * según el fragment actual.
      */
     private void configurarNavegacion() {
 
@@ -53,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = navHostFragment.getNavController();
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
-        // 🔥 CONTROL DE VISIBILIDAD DEL MENÚ
+        // Control de visibilidad del menú inferior
         navController.addOnDestinationChangedListener(
                 (controller, destination, arguments) -> {
 
@@ -73,7 +81,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Solicita el permiso POST_NOTIFICATIONS en Android 13+
+     * Solicita el permiso POST_NOTIFICATIONS en Android 13 o superior.
+     * En versiones anteriores no es necesario.
      */
     private void solicitarPermisoNotificaciones() {
 
@@ -112,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Permiso de notificaciones concedido");
 
             } else {
-                Log.w(TAG, "Permiso de notificaciones DENEGADO");
+                Log.w(TAG, "Permiso de notificaciones denegado");
             }
         }
     }

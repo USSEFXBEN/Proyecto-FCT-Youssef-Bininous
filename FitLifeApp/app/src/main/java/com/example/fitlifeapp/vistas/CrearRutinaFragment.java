@@ -30,19 +30,31 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Fragment encargado de crear una nueva rutina.
+ * Permite introducir nombre, descripción, hora y días activos.
+ * Si se selecciona una hora, también se crea un recordatorio asociado.
+ */
 public class CrearRutinaFragment extends Fragment {
 
-    private static final String TAG = "FITLIFE_TRACE";
+    private static final String TAG = "CrearRutinaFragment";
 
+    // Campos de texto
     private EditText etNombre, etDescripcion;
     private TextView tvHoraSeleccionada;
+
+    // Botones
     private Button btnSeleccionarHora, btnCancelar, btnGuardar;
 
-    private CheckBox cbLunes, cbMartes, cbMiercoles, cbJueves, cbViernes, cbSabado, cbDomingo;
+    // CheckBox de días
+    private CheckBox cbLunes, cbMartes, cbMiercoles, cbJueves,
+            cbViernes, cbSabado, cbDomingo;
 
+    // Firebase
     private FirebaseFirestore db;
     private String userId;
 
+    // Hora seleccionada en formato HH:mm
     private String horaSeleccionada = "";
 
     @Nullable
@@ -51,26 +63,23 @@ public class CrearRutinaFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        Log.d(TAG, "══════════════════════════════════════");
-        Log.d(TAG, "🟢 onCreateView INICIO");
-
         View view = inflater.inflate(R.layout.fragment_crear_rutina, container, false);
 
         db = FirebaseFirestore.getInstance();
-        Log.d(TAG, "📦 FirebaseFirestore inicializado");
 
+        // Comprobamos que el usuario esté logueado
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            Log.e(TAG, "❌ Usuario no logueado");
             Toast.makeText(getContext(), "Usuario no logueado", Toast.LENGTH_SHORT).show();
             return view;
         }
 
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Log.d(TAG, "👤 userId = " + userId);
 
+        // Enlace de vistas
         etNombre = view.findViewById(R.id.etNombreRutina);
         etDescripcion = view.findViewById(R.id.etDescripcionRutina);
         tvHoraSeleccionada = view.findViewById(R.id.tvHoraSeleccionada);
+
         btnSeleccionarHora = view.findViewById(R.id.btnSeleccionarHora);
         btnCancelar = view.findViewById(R.id.btnCancelarCrear);
         btnGuardar = view.findViewById(R.id.btnGuardarRutina);
@@ -83,32 +92,26 @@ public class CrearRutinaFragment extends Fragment {
         cbSabado = view.findViewById(R.id.cbSabado);
         cbDomingo = view.findViewById(R.id.cbDomingo);
 
-        Log.d(TAG, "🧩 Views enlazadas");
+        // Listener para seleccionar hora
+        btnSeleccionarHora.setOnClickListener(v -> mostrarTimePicker());
 
-        btnSeleccionarHora.setOnClickListener(v -> {
-            Log.d(TAG, "🕒 Click en seleccionar hora");
-            mostrarTimePicker();
-        });
+        // Listener para guardar rutina
+        btnGuardar.setOnClickListener(v -> guardarRutina());
 
-        btnGuardar.setOnClickListener(v -> {
-            Log.d(TAG, "💾 CLICK BOTÓN GUARDAR");
-            guardarRutina();
-        });
-
-        btnCancelar.setOnClickListener(v -> {
-            Log.d(TAG, "↩️ Click cancelar");
-            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
-                    .popBackStack();
-        });
-
-        Log.d(TAG, "🟢 onCreateView FIN");
-        Log.d(TAG, "══════════════════════════════════════");
+        // Listener para cancelar y volver atrás
+        btnCancelar.setOnClickListener(v ->
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
+                        .popBackStack()
+        );
 
         return view;
     }
 
+    /**
+     * Muestra un TimePickerDialog para seleccionar la hora
+     * del recordatorio de la rutina.
+     */
     private void mostrarTimePicker() {
-        Log.d(TAG, "🕒 mostrarTimePicker()");
 
         Calendar c = Calendar.getInstance();
 
@@ -117,7 +120,6 @@ public class CrearRutinaFragment extends Fragment {
                 (view, hourOfDay, minute) -> {
                     horaSeleccionada = String.format("%02d:%02d", hourOfDay, minute);
                     tvHoraSeleccionada.setText(horaSeleccionada);
-                    Log.d(TAG, "⏰ Hora seleccionada = " + horaSeleccionada);
                 },
                 c.get(Calendar.HOUR_OF_DAY),
                 c.get(Calendar.MINUTE),
@@ -125,24 +127,22 @@ public class CrearRutinaFragment extends Fragment {
         ).show();
     }
 
+    /**
+     * Valida los datos introducidos y guarda la rutina en Firestore.
+     * Si se ha seleccionado una hora, también se crea un recordatorio.
+     */
     private void guardarRutina() {
-
-        Log.d(TAG, "══════════════════════════════════════");
-        Log.d(TAG, "💾 guardarRutina() INICIO");
 
         String nombre = etNombre.getText().toString().trim();
         String descripcion = etDescripcion.getText().toString().trim();
 
-        Log.d(TAG, "📌 nombre = " + nombre);
-        Log.d(TAG, "📌 descripcion = " + descripcion);
-        Log.d(TAG, "📌 horaSeleccionada = " + horaSeleccionada);
-
+        // Validación básica
         if (TextUtils.isEmpty(nombre)) {
-            Log.e(TAG, "❌ Nombre vacío");
             Toast.makeText(getContext(), "Introduce un nombre", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Mapa de días activos
         Map<String, Boolean> diasActivos = new HashMap<>();
         diasActivos.put("lunes", cbLunes.isChecked());
         diasActivos.put("martes", cbMartes.isChecked());
@@ -152,11 +152,8 @@ public class CrearRutinaFragment extends Fragment {
         diasActivos.put("sabado", cbSabado.isChecked());
         diasActivos.put("domingo", cbDomingo.isChecked());
 
-
-        Log.d(TAG, "📅 Días activos = " + diasActivos);
-
+        // ID de la rutina
         String rutinaId = db.collection("routines").document().getId();
-        Log.d(TAG, "🆔 rutinaId = " + rutinaId);
 
         Rutina rutina = new Rutina(
                 rutinaId,
@@ -167,23 +164,16 @@ public class CrearRutinaFragment extends Fragment {
                 diasActivos
         );
 
-        Log.d(TAG, "📤 Guardando rutina en Firestore");
-
         db.collection("routines")
                 .document(rutinaId)
                 .set(rutina)
                 .addOnSuccessListener(unused -> {
 
-                    Log.d(TAG, "✅ Rutina guardada");
-
+                    // Si hay hora, se crea también un recordatorio
                     if (!TextUtils.isEmpty(horaSeleccionada)) {
-
-                        Log.d(TAG, "🔔 Creando recordatorio");
 
                         String recordatorioId =
                                 db.collection("recordatorios").document().getId();
-
-                        Log.d(TAG, "🆔 recordatorioId = " + recordatorioId);
 
                         Recordatorio recordatorio = new Recordatorio(
                                 recordatorioId,
@@ -196,41 +186,36 @@ public class CrearRutinaFragment extends Fragment {
                                 true
                         );
 
-                        Log.d(TAG, "📤 Guardando recordatorio en Firestore");
-
                         db.collection("recordatorios")
                                 .document(recordatorioId)
                                 .set(recordatorio)
                                 .addOnSuccessListener(r -> {
-
-                                    Log.d(TAG, "✅ Recordatorio guardado");
-                                    Log.d(TAG, "🚀 Programando alarma");
 
                                     if (getContext() != null) {
                                         ReminderScheduler.programarRecordatorio(
                                                 getContext().getApplicationContext(),
                                                 recordatorio
                                         );
-                                        Log.d(TAG, "⏰ Alarma programada correctamente");
-                                    } else {
-                                        Log.e(TAG, "❌ Contexto nulo, alarma NO programada");
                                     }
 
-                                    Log.d(TAG, "↩️ Navegando atrás");
-                                    Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
-                                            .popBackStack();
+                                    Navigation.findNavController(
+                                            requireActivity(),
+                                            R.id.nav_host_fragment
+                                    ).popBackStack();
                                 })
                                 .addOnFailureListener(e ->
-                                        Log.e(TAG, "❌ Error guardando recordatorio", e)
+                                        Log.e(TAG, "Error guardando recordatorio", e)
                                 );
                     } else {
-                        Log.d(TAG, "ℹ️ Rutina sin hora, no se programa notificación");
-                        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
-                                .popBackStack();
+                        // Rutina sin hora, solo se guarda la rutina
+                        Navigation.findNavController(
+                                requireActivity(),
+                                R.id.nav_host_fragment
+                        ).popBackStack();
                     }
                 })
                 .addOnFailureListener(e ->
-                        Log.e(TAG, "❌ Error guardando rutina", e)
+                        Log.e(TAG, "Error guardando rutina", e)
                 );
     }
 }

@@ -1,6 +1,5 @@
 package com.example.fitlifeapp.vistas;
 
-import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -28,23 +27,34 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Fragment encargado de editar una rutina existente.
+ * Permite modificar nombre, descripción, hora y días activos,
+ * así como eliminar la rutina.
+ */
 public class EditarRutinaFragment extends Fragment {
 
+    // Campos de texto
     private EditText etNombre, etDescripcion;
-
     private TextView tvHoraSeleccionada;
-    private Button btnSeleccionarHora, btnCancelar, btnGuardarCambios, btnEliminar;
 
-    private CheckBox cbLunes, cbMartes, cbMiercoles, cbJueves, cbViernes, cbSabado, cbDomingo;
+    // Botones
+    private Button btnSeleccionarHora, btnCancelar,
+            btnGuardarCambios, btnEliminar;
 
+    // CheckBox de días
+    private CheckBox cbLunes, cbMartes, cbMiercoles, cbJueves,
+            cbViernes, cbSabado, cbDomingo;
+
+    // Firebase
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    // Datos de la rutina
     private String rutinaId;
     private String userId;
     private String horaSeleccionada = "";
 
-    @SuppressLint("WrongViewCast")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -56,12 +66,14 @@ public class EditarRutinaFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        // Comprobación de usuario logueado
         if (mAuth.getCurrentUser() == null) {
             Toast.makeText(getContext(), "Usuario no logueado", Toast.LENGTH_SHORT).show();
             return view;
         }
         userId = mAuth.getCurrentUser().getUid();
 
+        // Obtener ID de la rutina desde los argumentos
         if (getArguments() != null) {
             rutinaId = getArguments().getString("rutinaId");
         }
@@ -71,10 +83,11 @@ public class EditarRutinaFragment extends Fragment {
             return view;
         }
 
-        // Views
+        // Enlace de vistas
         etNombre = view.findViewById(R.id.etNombreRutinaEdit);
         etDescripcion = view.findViewById(R.id.etDescripcionRutinaEdit);
         tvHoraSeleccionada = view.findViewById(R.id.tvHoraSeleccionadaEdit);
+
         btnSeleccionarHora = view.findViewById(R.id.btnSeleccionarHoraEdit);
         btnCancelar = view.findViewById(R.id.btnCancelarEditar);
         btnGuardarCambios = view.findViewById(R.id.btnGuardarCambios);
@@ -88,9 +101,15 @@ public class EditarRutinaFragment extends Fragment {
         cbSabado = view.findViewById(R.id.cbSabadoEdit);
         cbDomingo = view.findViewById(R.id.cbDomingoEdit);
 
+        // Listeners
         btnSeleccionarHora.setOnClickListener(v -> mostrarTimePicker());
         btnGuardarCambios.setOnClickListener(v -> guardarCambios());
-        btnCancelar.setOnClickListener(v -> Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).popBackStack());
+        btnCancelar.setOnClickListener(v ->
+                Navigation.findNavController(
+                        requireActivity(),
+                        R.id.nav_host_fragment
+                ).popBackStack()
+        );
         btnEliminar.setOnClickListener(v -> eliminarRutina());
 
         // Cargar datos actuales de la rutina
@@ -99,24 +118,37 @@ public class EditarRutinaFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Muestra un TimePickerDialog para modificar la hora
+     * del recordatorio de la rutina.
+     */
     private void mostrarTimePicker() {
-        final Calendar c = Calendar.getInstance();
-        int hora = c.get(Calendar.HOUR_OF_DAY);
-        int minuto = c.get(Calendar.MINUTE);
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
+        Calendar c = Calendar.getInstance();
+
+        new TimePickerDialog(
+                getContext(),
                 (view, hourOfDay, minute) -> {
                     horaSeleccionada = String.format("%02d:%02d", hourOfDay, minute);
                     tvHoraSeleccionada.setText(horaSeleccionada);
-                }, hora, minuto, true);
-
-        timePickerDialog.show();
+                },
+                c.get(Calendar.HOUR_OF_DAY),
+                c.get(Calendar.MINUTE),
+                true
+        ).show();
     }
 
+    /**
+     * Carga los datos de la rutina desde Firestore
+     * y rellena los campos del formulario.
+     */
     private void cargarRutinaDesdeFirestore() {
-        db.collection("routines").document(rutinaId)
+
+        db.collection("routines")
+                .document(rutinaId)
                 .get()
                 .addOnSuccessListener(doc -> {
+
                     if (!doc.exists()) {
                         Toast.makeText(getContext(), "Rutina no encontrada", Toast.LENGTH_SHORT).show();
                         return;
@@ -126,19 +158,15 @@ public class EditarRutinaFragment extends Fragment {
                     if (r == null) return;
 
                     // Rellenar campos
-                    if (r.getNombre() != null) {
-                        etNombre.setText(r.getNombre());
-                    }
-                    if (r.getDescripcion() != null) {
-                        etDescripcion.setText(r.getDescripcion());
-                    }
+                    etNombre.setText(r.getNombre() != null ? r.getNombre() : "");
+                    etDescripcion.setText(r.getDescripcion() != null ? r.getDescripcion() : "");
 
-                    horaSeleccionada = r.getHoraRecordatorio() != null ? r.getHoraRecordatorio() : "";
-                    if (horaSeleccionada.isEmpty()) {
-                        tvHoraSeleccionada.setText("Sin hora");
-                    } else {
-                        tvHoraSeleccionada.setText(horaSeleccionada);
-                    }
+                    horaSeleccionada =
+                            r.getHoraRecordatorio() != null ? r.getHoraRecordatorio() : "";
+
+                    tvHoraSeleccionada.setText(
+                            horaSeleccionada.isEmpty() ? "Sin hora" : horaSeleccionada
+                    );
 
                     Map<String, Boolean> dias = r.getDiasActivos();
                     if (dias != null) {
@@ -152,12 +180,21 @@ public class EditarRutinaFragment extends Fragment {
                     }
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Error al cargar rutina: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(
+                                getContext(),
+                                "Error al cargar rutina: " + e.getMessage(),
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
 
+    /**
+     * Guarda los cambios realizados en la rutina.
+     */
     private void guardarCambios() {
-        String nombre = etNombre.getText() != null ? etNombre.getText().toString().trim() : "";
-        String descripcion = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
+
+        String nombre = etNombre.getText().toString().trim();
+        String descripcion = etDescripcion.getText().toString().trim();
 
         if (TextUtils.isEmpty(nombre)) {
             Toast.makeText(getContext(), "El nombre es obligatorio", Toast.LENGTH_SHORT).show();
@@ -178,28 +215,56 @@ public class EditarRutinaFragment extends Fragment {
         updateData.put("descripcion", descripcion);
         updateData.put("horaRecordatorio", horaSeleccionada);
         updateData.put("diasActivos", diasActivos);
-        updateData.put("userId", userId); // por seguridad
+        updateData.put("userId", userId);
 
-        db.collection("routines").document(rutinaId)
+        db.collection("routines")
+                .document(rutinaId)
                 .update(updateData)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Rutina actualizada", Toast.LENGTH_SHORT).show();
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-                    navController.navigate(R.id.action_editarRutinaFragment_to_nav_routines);
+                    NavController navController =
+                            Navigation.findNavController(
+                                    requireActivity(),
+                                    R.id.nav_host_fragment
+                            );
+                    navController.navigate(
+                            R.id.action_editarRutinaFragment_to_nav_routines
+                    );
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Error al actualizar rutina: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(
+                                getContext(),
+                                "Error al actualizar rutina: " + e.getMessage(),
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
 
+    /**
+     * Elimina la rutina de Firestore.
+     */
     private void eliminarRutina() {
-        db.collection("routines").document(rutinaId)
+
+        db.collection("routines")
+                .document(rutinaId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Rutina eliminada", Toast.LENGTH_SHORT).show();
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-                    navController.navigate(R.id.action_editarRutinaFragment_to_nav_routines);
+                    NavController navController =
+                            Navigation.findNavController(
+                                    requireActivity(),
+                                    R.id.nav_host_fragment
+                            );
+                    navController.navigate(
+                            R.id.action_editarRutinaFragment_to_nav_routines
+                    );
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Error al eliminar rutina: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Toast.makeText(
+                                getContext(),
+                                "Error al eliminar rutina: " + e.getMessage(),
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
 }

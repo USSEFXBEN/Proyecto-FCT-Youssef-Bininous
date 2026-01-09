@@ -22,6 +22,11 @@ import com.example.fitlifeapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * Fragment de perfil del usuario.
+ * Permite visualizar datos básicos, cambiar la contraseña,
+ * activar o desactivar el modo oscuro y cerrar sesión.
+ */
 public class PerfilFragment extends Fragment {
 
     private FirebaseAuth auth;
@@ -40,31 +45,44 @@ public class PerfilFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
 
+        // Enlace de vistas
         tvName = view.findViewById(R.id.tvProfileName);
         tvEmail = view.findViewById(R.id.tvProfileEmail);
         btnLogout = view.findViewById(R.id.btnLogout);
         Switch switchDarkMode = view.findViewById(R.id.switchDarkMode);
         btnChangePassword = view.findViewById(R.id.btnChangePassword);
 
+        // Mostrar datos del usuario
         if (user != null) {
             tvEmail.setText(user.getEmail());
-            tvName.setText(user.getDisplayName() != null ? user.getDisplayName() : "Usuario");
+            tvName.setText(
+                    user.getDisplayName() != null
+                            ? user.getDisplayName()
+                            : "Usuario"
+            );
         }
 
-        // Estado inicial del dark mode
+        // Estado inicial del modo oscuro
         int currentMode = AppCompatDelegate.getDefaultNightMode();
-        switchDarkMode.setChecked(currentMode == AppCompatDelegate.MODE_NIGHT_YES);
+        switchDarkMode.setChecked(
+                currentMode == AppCompatDelegate.MODE_NIGHT_YES
+        );
 
-        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            AppCompatDelegate.setDefaultNightMode(
-                    isChecked
-                            ? AppCompatDelegate.MODE_NIGHT_YES
-                            : AppCompatDelegate.MODE_NIGHT_NO
-            );
-        });
+        // Cambiar modo oscuro
+        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) ->
+                AppCompatDelegate.setDefaultNightMode(
+                        isChecked
+                                ? AppCompatDelegate.MODE_NIGHT_YES
+                                : AppCompatDelegate.MODE_NIGHT_NO
+                )
+        );
 
-        btnChangePassword.setOnClickListener(v -> mostrarDialogCambiarPassword());
+        // Cambiar contraseña
+        btnChangePassword.setOnClickListener(
+                v -> mostrarDialogCambiarPassword()
+        );
 
+        // Cerrar sesión
         btnLogout.setOnClickListener(v -> {
             auth.signOut();
             Navigation.findNavController(view)
@@ -74,6 +92,10 @@ public class PerfilFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Muestra un diálogo para cambiar la contraseña del usuario.
+     * Se valida que la nueva contraseña tenga una longitud mínima.
+     */
     private void mostrarDialogCambiarPassword() {
 
         EditText etPassword = new EditText(getContext());
@@ -84,9 +106,13 @@ public class PerfilFragment extends Fragment {
                 .setView(etPassword)
                 .setPositiveButton("Guardar", (dialog, which) -> {
 
-                    String newPassword = etPassword.getText().toString().trim();
+                    String newPassword =
+                            etPassword.getText().toString().trim();
 
-                    if (TextUtils.isEmpty(newPassword) || newPassword.length() < 6) {
+                    // Validación básica
+                    if (TextUtils.isEmpty(newPassword)
+                            || newPassword.length() < 6) {
+
                         Toast.makeText(
                                 getContext(),
                                 "La contraseña debe tener al menos 6 caracteres",
@@ -104,13 +130,15 @@ public class PerfilFragment extends Fragment {
                                             getContext(),
                                             "Contraseña actualizada",
                                             Toast.LENGTH_SHORT
-                                    ).show())
+                                    ).show()
+                            )
                             .addOnFailureListener(e ->
                                     Toast.makeText(
                                             getContext(),
                                             "Error: vuelve a iniciar sesión",
                                             Toast.LENGTH_SHORT
-                                    ).show());
+                                    ).show()
+                            );
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();

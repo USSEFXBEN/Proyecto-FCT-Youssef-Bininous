@@ -13,8 +13,17 @@ import com.example.fitlifeapp.model.Usuario;
 
 import java.util.List;
 
-public class UsuariosAdapter extends RecyclerView.Adapter<UsuariosAdapter.UsuarioViewHolder> {
+/**
+ * Adapter encargado de mostrar la lista de usuarios
+ * en el panel de administración.
+ */
+public class UsuariosAdapter
+        extends RecyclerView.Adapter<UsuariosAdapter.UsuarioViewHolder> {
 
+    /**
+     * Listener para gestionar acciones prolongadas
+     * sobre un usuario (opciones de administrador).
+     */
     public interface OnUsuarioLongClickListener {
         void onLongClick(Usuario usuario);
     }
@@ -22,32 +31,49 @@ public class UsuariosAdapter extends RecyclerView.Adapter<UsuariosAdapter.Usuari
     private List<Usuario> listaUsuarios;
     private OnUsuarioLongClickListener listener;
 
+    /**
+     * Constructor del adapter.
+     */
     public UsuariosAdapter(List<Usuario> listaUsuarios,
                            OnUsuarioLongClickListener listener) {
+
         this.listaUsuarios = listaUsuarios;
         this.listener = listener;
     }
 
     @NonNull
     @Override
-    public UsuarioViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public UsuarioViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_usuario_admin, parent, false);
+                .inflate(
+                        R.layout.item_usuario_admin,
+                        parent,
+                        false
+                );
+
         return new UsuarioViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UsuarioViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull UsuarioViewHolder holder,
+            int position) {
 
         Usuario usuario = listaUsuarios.get(position);
 
+        // Mostrar datos básicos del usuario
         holder.tvNombre.setText(usuario.getNombre());
         holder.tvEmail.setText(usuario.getEmail());
 
         int total = usuario.getTotalRutinas();
-        holder.tvRutinas.setText(total + (total == 1 ? " rutina" : " rutinas"));
+        holder.tvRutinas.setText(
+                total + (total == 1 ? " rutina" : " rutinas")
+        );
 
-        // 👑 LONG CLICK ADMIN
+        // Long click para mostrar opciones de administrador
         holder.itemView.setOnLongClickListener(v -> {
             if (listener != null) {
                 listener.onLongClick(usuario);
@@ -58,19 +84,30 @@ public class UsuariosAdapter extends RecyclerView.Adapter<UsuariosAdapter.Usuari
 
     @Override
     public int getItemCount() {
-        return listaUsuarios != null ? listaUsuarios.size() : 0;
+        return listaUsuarios != null
+                ? listaUsuarios.size()
+                : 0;
     }
 
-    static class UsuarioViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * ViewHolder del item de usuario en el panel admin.
+     */
+    static class UsuarioViewHolder
+            extends RecyclerView.ViewHolder {
 
         TextView tvNombre, tvEmail, tvRutinas;
 
-        public UsuarioViewHolder(@NonNull View itemView) {
+        public UsuarioViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
-            tvNombre = itemView.findViewById(R.id.tvNombreUsuario);
-            tvEmail = itemView.findViewById(R.id.tvEmailUsuario);
-            tvRutinas = itemView.findViewById(R.id.tvInfoRutinas);
+            tvNombre =
+                    itemView.findViewById(R.id.tvNombreUsuario);
+            tvEmail =
+                    itemView.findViewById(R.id.tvEmailUsuario);
+            tvRutinas =
+                    itemView.findViewById(R.id.tvInfoRutinas);
         }
     }
 }

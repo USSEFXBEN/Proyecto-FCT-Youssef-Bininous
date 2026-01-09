@@ -29,6 +29,11 @@ import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment encargado de mostrar y gestionar las rutinas del usuario.
+ * Permite crear, editar y eliminar rutinas, así como eliminar
+ * todos los datos asociados a una rutina.
+ */
 public class RutinaFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -46,22 +51,31 @@ public class RutinaFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_rutinas, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_rutinas, container, false);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        // Comprobación de usuario logueado
         if (mAuth.getCurrentUser() != null) {
             userId = mAuth.getCurrentUser().getUid();
         } else {
-            Toast.makeText(getContext(), "Usuario no logueado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    getContext(),
+                    "Usuario no logueado",
+                    Toast.LENGTH_SHORT
+            ).show();
             return view;
         }
 
         recyclerView = view.findViewById(R.id.routines_recycler_view);
         fabAgregar = view.findViewById(R.id.fab_add_routine);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(getContext())
+        );
+
         listaRutinas = new ArrayList<>();
 
         adapter = new RutinaAdapter(
@@ -96,15 +110,32 @@ public class RutinaFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Navega a la pantalla de creación de una nueva rutina.
+     */
     private void abrirCrearRutina() {
+
         NavController navController =
-                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-        navController.navigate(R.id.action_nav_routines_to_crearRutinaFragment);
+                Navigation.findNavController(
+                        requireActivity(),
+                        R.id.nav_host_fragment
+                );
+
+        navController.navigate(
+                R.id.action_nav_routines_to_crearRutinaFragment
+        );
     }
 
+    /**
+     * Navega a la pantalla de edición de la rutina seleccionada.
+     */
     private void abrirEditarRutina(Rutina rutina) {
+
         NavController navController =
-                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+                Navigation.findNavController(
+                        requireActivity(),
+                        R.id.nav_host_fragment
+                );
 
         Bundle bundle = new Bundle();
         bundle.putString("rutinaId", rutina.getId());
@@ -115,98 +146,118 @@ public class RutinaFragment extends Fragment {
         );
     }
 
+    /**
+     * Carga las rutinas del usuario desde Firestore.
+     */
     private void cargarRutinas() {
+
         db.collection("routines")
                 .whereEqualTo("userId", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+
                     listaRutinas.clear();
+
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Rutina r = doc.toObject(Rutina.class);
                         r.setId(doc.getId());
                         listaRutinas.add(r);
                     }
+
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(),
+                        Toast.makeText(
+                                getContext(),
                                 "Error al cargar rutinas",
-                                Toast.LENGTH_SHORT).show());
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
 
-    // 🗑️ ELIMINAR RUTINA + PROGRESO + RECORDATORIOS
+    /**
+     * Elimina una rutina y todos los datos asociados:
+     * recordatorios, progreso y la propia rutina.
+     * El borrado se realiza mediante un WriteBatch.
+     */
     private void eliminarRutina(Rutina rutina) {
 
         if (rutina.getId() == null) return;
 
-        String tituloRecordatorio = "Rutina: " + rutina.getNombre();
+        String tituloRecordatorio =
+                "Rutina: " + rutina.getNombre();
 
-        // 1️⃣ Buscar recordatorios asociados a esta rutina
+        // Buscar recordatorios asociados a esta rutina
         db.collection("recordatorios")
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("titulo", tituloRecordatorio)
                 .get()
-                .addOnSuccessListener(recordatoriosSnapshot -> {
+                .addOnSuccessListener(recordatoriosSnapshot ->
 
-                    // 2️⃣ Buscar progreso
-                    db.collection("progress")
-                            .whereEqualTo("rutinaId", rutina.getId())
-                            .whereEqualTo("userId", userId)
-                            .get()
-                            .addOnSuccessListener(progressSnapshots -> {
+                        // Buscar progreso asociado
+                        db.collection("progress")
+                                .whereEqualTo("rutinaId", rutina.getId())
+                                .whereEqualTo("userId", userId)
+                                .get()
+                                .addOnSuccessListener(progressSnapshots -> {
 
-                                WriteBatch batch = db.batch();
+                                    WriteBatch batch = db.batch();
 
-                                // 🔔 Cancelar y borrar recordatorios
-                                for (QueryDocumentSnapshot doc : recordatoriosSnapshot) {
-                                    Recordatorio r = doc.toObject(Recordatorio.class);
-                                    r.setId(doc.getId());
+                                    // Cancelar y borrar recordatorios
+                                    for (QueryDocumentSnapshot doc : recordatoriosSnapshot) {
 
-                                    ReminderScheduler.cancelarRecordatorio(
-                                            requireContext().getApplicationContext(),
-                                            r
+                                        Recordatorio r =
+                                                doc.toObject(Recordatorio.class);
+                                        r.setId(doc.getId());
+
+                                        ReminderScheduler.cancelarRecordatorio(
+                                                requireContext()
+                                                        .getApplicationContext(),
+                                                r
+                                        );
+
+                                        batch.delete(doc.getReference());
+                                    }
+
+                                    // Borrar progreso asociado
+                                    for (QueryDocumentSnapshot doc : progressSnapshots) {
+                                        batch.delete(doc.getReference());
+                                    }
+
+                                    // Borrar rutina
+                                    batch.delete(
+                                            db.collection("routines")
+                                                    .document(rutina.getId())
                                     );
 
-                                    batch.delete(doc.getReference());
-                                }
+                                    // Ejecutar borrado en batch
+                                    batch.commit()
+                                            .addOnSuccessListener(unused -> {
 
-                                // 🗑️ Borrar progreso
-                                for (QueryDocumentSnapshot doc : progressSnapshots) {
-                                    batch.delete(doc.getReference());
-                                }
+                                                db.collection("users")
+                                                        .document(userId)
+                                                        .update(
+                                                                "totalRutinas",
+                                                                FieldValue.increment(-1)
+                                                        );
 
-                                // 🗑️ Borrar rutina
-                                batch.delete(
-                                        db.collection("routines").document(rutina.getId())
-                                );
+                                                listaRutinas.remove(rutina);
+                                                adapter.notifyDataSetChanged();
 
-                                // 3️⃣ Ejecutar borrado
-                                batch.commit()
-                                        .addOnSuccessListener(unused -> {
-
-                                            db.collection("users")
-                                                    .document(userId)
-                                                    .update(
-                                                            "totalRutinas",
-                                                            FieldValue.increment(-1)
-                                                    );
-
-                                            listaRutinas.remove(rutina);
-                                            adapter.notifyDataSetChanged();
-
-                                            Toast.makeText(
-                                                    getContext(),
-                                                    "Rutina y recordatorios eliminados",
-                                                    Toast.LENGTH_SHORT
-                                            ).show();
-                                        })
-                                        .addOnFailureListener(e ->
                                                 Toast.makeText(
                                                         getContext(),
-                                                        "Error al eliminar datos",
+                                                        "Rutina eliminada correctamente",
                                                         Toast.LENGTH_SHORT
-                                                ).show());
-                            });
-                });
+                                                ).show();
+                                            })
+                                            .addOnFailureListener(e ->
+                                                    Toast.makeText(
+                                                            getContext(),
+                                                            "Error al eliminar datos",
+                                                            Toast.LENGTH_SHORT
+                                                    ).show()
+                                            );
+                                })
+                );
     }
 }

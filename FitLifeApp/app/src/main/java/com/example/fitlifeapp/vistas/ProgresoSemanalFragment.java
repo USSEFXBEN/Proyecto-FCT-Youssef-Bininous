@@ -30,12 +30,18 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Fragment encargado de mostrar el progreso semanal del usuario
+ * mediante un gráfico de barras.
+ * Cada barra representa el número de rutinas completadas por día.
+ */
 public class ProgresoSemanalFragment extends Fragment {
 
     private BarChart barChart;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
 
+    // Formato de fecha utilizado en Firestore (yyyy-MM-dd)
     private final SimpleDateFormat sdf =
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -60,9 +66,14 @@ public class ProgresoSemanalFragment extends Fragment {
         return view;
     }
 
-    // ---------------- CONFIGURACIÓN VISUAL ----------------
+    // ---------------- CONFIGURACIÓN DEL GRÁFICO ----------------
 
+    /**
+     * Configura el aspecto visual del gráfico:
+     * ejes, leyendas y comportamiento general.
+     */
     private void configurarGrafico() {
+
         barChart.getDescription().setEnabled(false);
         barChart.getLegend().setEnabled(false);
 
@@ -70,7 +81,7 @@ public class ProgresoSemanalFragment extends Fragment {
         barChart.setDrawValueAboveBar(true);
         barChart.setFitBars(true);
 
-        // EJE X
+        // Configuración del eje X (días de la semana)
         XAxis xAxis = barChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
@@ -92,24 +103,30 @@ public class ProgresoSemanalFragment extends Fragment {
             }
         });
 
-        // EJE Y IZQUIERDO
+        // Configuración del eje Y izquierdo
         YAxis leftAxis = barChart.getAxisLeft();
         leftAxis.setAxisMinimum(0f);
         leftAxis.setGranularity(1f);
         leftAxis.setDrawGridLines(true);
 
-        // EJE Y DERECHO DESACTIVADO
+        // Desactivamos el eje Y derecho
         barChart.getAxisRight().setEnabled(false);
     }
 
     // ---------------- CARGA DE DATOS ----------------
 
+    /**
+     * Obtiene de Firestore las rutinas completadas del usuario
+     * y las agrupa por día de la semana.
+     */
     private void cargarDatos() {
+
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) return;
 
         String uid = user.getUid();
 
+        // Inicializamos el conteo de lunes a domingo
         Map<Integer, Integer> conteo = new HashMap<>();
         for (int i = 0; i < 7; i++) {
             conteo.put(i, 0);
@@ -120,21 +137,30 @@ public class ProgresoSemanalFragment extends Fragment {
                 .whereEqualTo("estado", "completado")
                 .get()
                 .addOnSuccessListener(snapshot -> {
+
                     for (QueryDocumentSnapshot doc : snapshot) {
                         String fecha = doc.getString("fecha");
                         Integer dia = obtenerIndiceDia(fecha);
+
                         if (dia != null) {
                             conteo.put(dia, conteo.get(dia) + 1);
                         }
                     }
+
                     pintarGrafico(conteo);
                 });
     }
 
+    /**
+     * Convierte una fecha en formato String a un índice
+     * de día de la semana (lunes = 0, domingo = 6).
+     */
     private Integer obtenerIndiceDia(String fecha) {
+
         try {
             Calendar cal = Calendar.getInstance();
             cal.setTime(sdf.parse(fecha));
+
             int day = cal.get(Calendar.DAY_OF_WEEK);
             switch (day) {
                 case Calendar.MONDAY: return 0;
@@ -145,13 +171,19 @@ public class ProgresoSemanalFragment extends Fragment {
                 case Calendar.SATURDAY: return 5;
                 case Calendar.SUNDAY: return 6;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
+
         return null;
     }
 
-    // ---------------- PINTADO ----------------
+    // ---------------- PINTADO DEL GRÁFICO ----------------
 
+    /**
+     * Genera el gráfico de barras a partir del conteo semanal.
+     */
     private void pintarGrafico(Map<Integer, Integer> conteo) {
+
         ArrayList<BarEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < 7; i++) {

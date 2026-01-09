@@ -24,6 +24,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment encargado de mostrar la lista de recordatorios del usuario.
+ * Permite activarlos, desactivarlos, eliminarlos y acceder
+ * a la pantalla de creación de nuevos recordatorios.
+ */
 public class RecordatoriosFragment extends Fragment {
 
     private RecyclerView rvRecordatorios;
@@ -41,7 +46,8 @@ public class RecordatoriosFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_recordatorios, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_recordatorios, container, false);
 
         rvRecordatorios = view.findViewById(R.id.rvRecordatorios);
         fabAdd = view.findViewById(R.id.fabAddRecordatorio);
@@ -49,11 +55,17 @@ public class RecordatoriosFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        rvRecordatorios.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvRecordatorios.setLayoutManager(
+                new LinearLayoutManager(getContext())
+        );
 
         adapter = new RecordatoriosAdapter(lista, new RecordatoriosAdapter.Listener() {
 
-            // 🔁 ACTIVAR / DESACTIVAR RECORDATORIO
+            /**
+             * Activa o desactiva un recordatorio.
+             * Al activarlo se programa la notificación y
+             * al desactivarlo se cancela.
+             */
             @Override
             public void onSwitchChanged(Recordatorio r, boolean activo) {
 
@@ -65,26 +77,49 @@ public class RecordatoriosFragment extends Fragment {
                             r.setActivo(activo);
 
                             if (activo) {
-                                // 🔔 Programar notificación
-                                ReminderScheduler.programarRecordatorio(requireContext(), r);
-                                Toast.makeText(getContext(), "Recordatorio activado", Toast.LENGTH_SHORT).show();
+                                ReminderScheduler.programarRecordatorio(
+                                        requireContext(),
+                                        r
+                                );
+                                Toast.makeText(
+                                        getContext(),
+                                        "Recordatorio activado",
+                                        Toast.LENGTH_SHORT
+                                ).show();
                             } else {
-                                // ❌ Cancelar notificación
-                                ReminderScheduler.cancelarRecordatorio(requireContext(), r);
-                                Toast.makeText(getContext(), "Recordatorio desactivado", Toast.LENGTH_SHORT).show();
+                                ReminderScheduler.cancelarRecordatorio(
+                                        requireContext(),
+                                        r
+                                );
+                                Toast.makeText(
+                                        getContext(),
+                                        "Recordatorio desactivado",
+                                        Toast.LENGTH_SHORT
+                                ).show();
                             }
                         })
                         .addOnFailureListener(e ->
-                                Toast.makeText(getContext(), "Error al actualizar", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                        getContext(),
+                                        "Error al actualizar",
+                                        Toast.LENGTH_SHORT
+                                ).show()
                         );
             }
 
-            // 🗑 ELIMINAR RECORDATORIO
+            /**
+             * Elimina un recordatorio.
+             * Antes de borrarlo de Firestore se cancela
+             * la notificación asociada.
+             */
             @Override
             public void onDelete(Recordatorio r) {
 
-                // Cancelamos alarma antes de borrar
-                ReminderScheduler.cancelarRecordatorio(requireContext(), r);
+                // Cancelamos la alarma antes de eliminar
+                ReminderScheduler.cancelarRecordatorio(
+                        requireContext(),
+                        r
+                );
 
                 db.collection("recordatorios")
                         .document(r.getId())
@@ -92,10 +127,18 @@ public class RecordatoriosFragment extends Fragment {
                         .addOnSuccessListener(unused -> {
                             lista.remove(r);
                             adapter.notifyDataSetChanged();
-                            Toast.makeText(getContext(), "Recordatorio eliminado", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(
+                                    getContext(),
+                                    "Recordatorio eliminado",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         })
                         .addOnFailureListener(e ->
-                                Toast.makeText(getContext(), "Error al eliminar", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                        getContext(),
+                                        "Error al eliminar",
+                                        Toast.LENGTH_SHORT
+                                ).show()
                         );
             }
         });
@@ -104,15 +147,22 @@ public class RecordatoriosFragment extends Fragment {
 
         cargarRecordatorios();
 
+        // Navegar a la pantalla de creación de recordatorios
         fabAdd.setOnClickListener(v ->
                 Navigation.findNavController(v)
-                        .navigate(R.id.action_nav_reminders_to_crearRecordatorio)
+                        .navigate(
+                                R.id.action_nav_reminders_to_crearRecordatorio
+                        )
         );
 
         return view;
     }
 
-    // 📥 CARGAR RECORDATORIOS DEL USUARIO
+    /**
+     * Carga los recordatorios del usuario desde Firestore.
+     * Si un recordatorio está activo, se reprograma la alarma
+     * al volver a este fragment.
+     */
     private void cargarRecordatorios() {
 
         db.collection("recordatorios")
@@ -123,20 +173,28 @@ public class RecordatoriosFragment extends Fragment {
                     lista.clear();
 
                     for (var doc : q) {
-                        Recordatorio r = doc.toObject(Recordatorio.class);
+                        Recordatorio r =
+                                doc.toObject(Recordatorio.class);
                         r.setId(doc.getId());
                         lista.add(r);
 
-                        // 🔁 Reprogramar si está activo (por si vuelve al fragment)
+                        // Reprogramar recordatorios activos
                         if (r.isActivo()) {
-                            ReminderScheduler.programarRecordatorio(requireContext(), r);
+                            ReminderScheduler.programarRecordatorio(
+                                    requireContext(),
+                                    r
+                            );
                         }
                     }
 
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Error al cargar recordatorios", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                                getContext(),
+                                "Error al cargar recordatorios",
+                                Toast.LENGTH_SHORT
+                        ).show()
                 );
     }
 }

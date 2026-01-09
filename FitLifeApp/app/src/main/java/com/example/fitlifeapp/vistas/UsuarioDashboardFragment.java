@@ -18,11 +18,11 @@ import com.example.fitlifeapp.R;
 import com.example.fitlifeapp.Adaptadores.RutinaAdapter;
 import com.example.fitlifeapp.model.Progreso;
 import com.example.fitlifeapp.model.Rutina;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,21 +33,25 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Fragment principal del usuario.
+ * Muestra un saludo, las rutinas del día actual
+ * y el progreso diario en forma de porcentaje.
+ */
 public class UsuarioDashboardFragment extends Fragment {
 
-    private static final String TAG = "UsuarioDashboardFragment";
+    private static final String TAG = "UsuarioDashboard";
 
     private TextView tvSaludoUsuario, tvMensajeDia, tvProgresoTexto;
     private RecyclerView rvRutinas;
+    private CircularProgressIndicator circularProgressDashboard;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
-    private List<Rutina> listaRutinas = new ArrayList<>();
-    private Map<String, String> progresoMap = new HashMap<>();
+    private final List<Rutina> listaRutinas = new ArrayList<>();
+    private final Map<String, String> progresoMap = new HashMap<>();
     private RutinaAdapter adapter;
-
-    private CircularProgressIndicator circularProgressDashboard;
 
     @Nullable
     @Override
@@ -55,15 +59,19 @@ public class UsuarioDashboardFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_dashboard, container, false);
 
         tvSaludoUsuario = view.findViewById(R.id.tvSaludoUsuario);
         tvMensajeDia = view.findViewById(R.id.tvMensajeDia);
         tvProgresoTexto = view.findViewById(R.id.tvProgresoTexto);
         rvRutinas = view.findViewById(R.id.rvRutinas);
-        circularProgressDashboard = view.findViewById(R.id.circularProgressDashboard);
+        circularProgressDashboard =
+                view.findViewById(R.id.circularProgressDashboard);
 
-        rvRutinas.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvRutinas.setLayoutManager(
+                new LinearLayoutManager(getContext())
+        );
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -73,6 +81,7 @@ public class UsuarioDashboardFragment extends Fragment {
                 progresoMap,
                 RutinaAdapter.Mode.DASHBOARD,
                 new RutinaAdapter.RoutineItemListener() {
+
                     @Override
                     public void onItemClick(Rutina rutina, int position) {
                         manejarClickRutina(rutina, position);
@@ -80,12 +89,12 @@ public class UsuarioDashboardFragment extends Fragment {
 
                     @Override
                     public void onEditClick(Rutina rutina, int position) {
-                        // No se usa en Dashboard
+                        // No se utiliza en el dashboard
                     }
 
                     @Override
                     public void onDeleteClick(Rutina rutina, int position) {
-                        // No se usa en Dashboard
+                        // No se utiliza en el dashboard
                     }
                 }
         );
@@ -97,7 +106,12 @@ public class UsuarioDashboardFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Devuelve la clave del día actual de la semana
+     * usada en Firestore (lunes, martes, etc.).
+     */
     private String getCurrentDayOfWeekKey() {
+
         Calendar calendar = Calendar.getInstance();
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
@@ -113,114 +127,187 @@ public class UsuarioDashboardFragment extends Fragment {
         }
     }
 
+    /**
+     * Carga los datos del usuario, sus rutinas del día
+     * y posteriormente el progreso asociado.
+     */
     private void cargarDatosUsuario() {
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         if (currentUser == null) {
-            Log.w(TAG, "Usuario no autenticado. Dashboard no cargado.");
-            Toast.makeText(getContext(),
+            Log.w(TAG, "Usuario no autenticado");
+            Toast.makeText(
+                    getContext(),
                     "Usuario no autenticado",
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
         String uid = currentUser.getUid();
         String dayKey = getCurrentDayOfWeekKey();
 
-        // 1️⃣ Saludo
-        db.collection("users").document(uid)
+        // 1. Obtener nombre del usuario
+        db.collection("users")
+                .document(uid)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+
                     if (documentSnapshot.exists()) {
-                        String nombre = documentSnapshot.getString("nombre");
-                        tvSaludoUsuario.setText("Hola, " + nombre + " 👋");
+                        String nombre =
+                                documentSnapshot.getString("nombre");
+                        tvSaludoUsuario.setText(
+                                "Hola, " + nombre
+                        );
                     } else {
-                        tvSaludoUsuario.setText("Hola, Usuario 👋");
+                        tvSaludoUsuario.setText("Hola, Usuario");
                     }
 
                     tvMensajeDia.setText(
-                            "¡Hagamos de hoy un día increíble! (" + dayKey.toUpperCase() + ")"
+                            "Rutinas programadas para " +
+                                    dayKey.toUpperCase()
                     );
 
-                    // 2️⃣ Rutinas del día
+                    // 2. Obtener rutinas activas para el día actual
                     db.collection("routines")
                             .whereEqualTo("userId", uid)
-                            .whereEqualTo("diasActivos." + dayKey, true)
+                            .whereEqualTo(
+                                    "diasActivos." + dayKey,
+                                    true
+                            )
                             .get()
-                            .addOnSuccessListener(queryDocumentSnapshots -> {
+                            .addOnSuccessListener(querySnapshots -> {
+
                                 listaRutinas.clear();
-                                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                                    Rutina r = doc.toObject(Rutina.class);
+
+                                for (QueryDocumentSnapshot doc : querySnapshots) {
+                                    Rutina r =
+                                            doc.toObject(Rutina.class);
                                     r.setId(doc.getId());
                                     listaRutinas.add(r);
                                 }
+
                                 cargarProgreso(uid);
                             })
                             .addOnFailureListener(e -> {
-                                Log.e(TAG, "Error al cargar rutinas: " + e.getMessage());
-                                Toast.makeText(getContext(),
+                                Log.e(
+                                        TAG,
+                                        "Error al cargar rutinas",
+                                        e
+                                );
+                                Toast.makeText(
+                                        getContext(),
                                         "Error al cargar rutinas de hoy",
-                                        Toast.LENGTH_LONG).show();
+                                        Toast.LENGTH_LONG
+                                ).show();
                             });
                 })
                 .addOnFailureListener(e ->
-                        Log.e(TAG, "Error al cargar usuario: " + e.getMessage()));
+                        Log.e(
+                                TAG,
+                                "Error al cargar usuario",
+                                e
+                        )
+                );
     }
 
+    /**
+     * Carga el progreso del día actual desde Firestore
+     * y lo asocia a cada rutina.
+     */
     private void cargarProgreso(String uid) {
+
         String fechaHoy =
-                new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        .format(new Date());
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                ).format(new Date());
 
         db.collection("progress")
                 .whereEqualTo("userId", uid)
                 .get()
                 .addOnSuccessListener(progressDocs -> {
+
                     progresoMap.clear();
+
                     for (QueryDocumentSnapshot pDoc : progressDocs) {
-                        Progreso p = pDoc.toObject(Progreso.class);
+                        Progreso p =
+                                pDoc.toObject(Progreso.class);
+
                         if (fechaHoy.equals(p.getFecha())) {
-                            progresoMap.put(p.getRutinaId(), p.getEstado());
+                            progresoMap.put(
+                                    p.getRutinaId(),
+                                    p.getEstado()
+                            );
                         }
                     }
+
                     adapter.notifyDataSetChanged();
                     actualizarProgreso();
                 })
                 .addOnFailureListener(e ->
-                        Log.e(TAG, "Error al cargar progreso: " + e.getMessage()));
+                        Log.e(
+                                TAG,
+                                "Error al cargar progreso",
+                                e
+                        )
+                );
     }
 
+    /**
+     * Calcula y muestra el porcentaje de rutinas
+     * completadas en el día actual.
+     */
     private void actualizarProgreso() {
+
         if (listaRutinas.isEmpty()) {
-            tvProgresoTexto.setText("¡No hay rutinas programadas para hoy!");
+            tvProgresoTexto.setText(
+                    "No hay rutinas programadas para hoy"
+            );
             circularProgressDashboard.setProgress(0, true);
             return;
         }
 
         int completadas = 0;
+
         for (Rutina r : listaRutinas) {
-            if ("completado".equalsIgnoreCase(progresoMap.get(r.getId()))) {
+            if ("completado".equalsIgnoreCase(
+                    progresoMap.get(r.getId()))) {
                 completadas++;
             }
         }
 
         int total = listaRutinas.size();
-        int porcentaje = (int) ((completadas / (float) total) * 100);
+        int porcentaje =
+                (int) ((completadas / (float) total) * 100);
 
         tvProgresoTexto.setText(
-                "¡Has completado " + completadas + "/" + total + " rutinas de hoy! (" + porcentaje + "%)"
+                "Completadas " + completadas + " de " + total +
+                        " (" + porcentaje + "%)"
         );
 
-        circularProgressDashboard.setProgress(porcentaje, true);
+        circularProgressDashboard.setProgress(
+                porcentaje,
+                true
+        );
     }
 
+    /**
+     * Gestiona el clic sobre una rutina,
+     * alternando su estado entre completado y pendiente.
+     */
     private void manejarClickRutina(Rutina rutina, int position) {
+
         if (rutina.getId() == null) return;
 
         String rutinaId = rutina.getId();
         String estadoActual = progresoMap.get(rutinaId);
+
         String nuevoEstado =
-                "completado".equalsIgnoreCase(estadoActual) ? "pendiente" : "completado";
+                "completado".equalsIgnoreCase(estadoActual)
+                        ? "pendiente"
+                        : "completado";
 
         progresoMap.put(rutinaId, nuevoEstado);
         adapter.notifyItemChanged(position);
@@ -229,16 +316,26 @@ public class UsuarioDashboardFragment extends Fragment {
         guardarProgresoEnFirestore(rutinaId, nuevoEstado);
     }
 
-    private void guardarProgresoEnFirestore(String rutinaId, String nuevoEstado) {
+    /**
+     * Guarda o actualiza el progreso de una rutina
+     * para el día actual en Firestore.
+     */
+    private void guardarProgresoEnFirestore(
+            String rutinaId,
+            String nuevoEstado) {
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) return;
 
         String uid = currentUser.getUid();
         String fechaHoy =
-                new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        .format(new Date());
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                ).format(new Date());
 
-        String docId = uid + "_" + rutinaId + "_" + fechaHoy;
+        String docId =
+                uid + "_" + rutinaId + "_" + fechaHoy;
 
         Progreso progreso = new Progreso();
         progreso.setUserId(uid);
@@ -250,8 +347,17 @@ public class UsuarioDashboardFragment extends Fragment {
                 .document(docId)
                 .set(progreso)
                 .addOnSuccessListener(aVoid ->
-                        Log.d(TAG, "Progreso guardado correctamente"))
+                        Log.d(
+                                TAG,
+                                "Progreso guardado correctamente"
+                        )
+                )
                 .addOnFailureListener(e ->
-                        Log.e(TAG, "Error al guardar progreso: " + e.getMessage()));
+                        Log.e(
+                                TAG,
+                                "Error al guardar progreso",
+                                e
+                        )
+                );
     }
 }

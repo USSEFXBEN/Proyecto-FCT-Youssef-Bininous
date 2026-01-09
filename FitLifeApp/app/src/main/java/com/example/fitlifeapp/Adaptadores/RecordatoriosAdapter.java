@@ -16,22 +16,51 @@ import com.example.fitlifeapp.model.Recordatorio;
 
 import java.util.List;
 
-public class RecordatoriosAdapter extends RecyclerView.Adapter<RecordatoriosAdapter.ViewHolder> {
+/**
+ * Adapter para mostrar la lista de recordatorios en un RecyclerView.
+ * Se encarga de enlazar los datos del modelo Recordatorio
+ * con el layout item_recordatorio.
+ */
+public class RecordatoriosAdapter
+        extends RecyclerView.Adapter<RecordatoriosAdapter.ViewHolder> {
 
+    /**
+     * Interfaz que permite comunicar eventos del Adapter
+     * al Fragment que lo utiliza.
+     */
     public interface Listener {
+
+        /**
+         * Se llama cuando se activa o desactiva un recordatorio.
+         */
         void onSwitchChanged(Recordatorio r, boolean activo);
+
+        /**
+         * Se llama cuando se solicita eliminar un recordatorio.
+         */
         void onDelete(Recordatorio r);
     }
 
     private List<Recordatorio> lista;
     private Listener listener;
 
-    public RecordatoriosAdapter(List<Recordatorio> lista, Listener listener) {
+    /**
+     * Constructor del adapter.
+     */
+    public RecordatoriosAdapter(
+            List<Recordatorio> lista,
+            Listener listener) {
+
         this.lista = lista;
         this.listener = listener;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * ViewHolder que mantiene las referencias a las vistas
+     * de cada item del RecyclerView.
+     */
+    public static class ViewHolder
+            extends RecyclerView.ViewHolder {
 
         ImageView icono;
         TextView tvTitulo, tvSubtitulo, tvCategoria;
@@ -52,30 +81,55 @@ public class RecordatoriosAdapter extends RecyclerView.Adapter<RecordatoriosAdap
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_recordatorio, parent, false);
+                .inflate(
+                        R.layout.item_recordatorio,
+                        parent,
+                        false
+                );
+
         return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull ViewHolder holder,
+            int position) {
 
         Recordatorio r = lista.get(position);
 
+        // Mostrar datos del recordatorio
         holder.tvTitulo.setText(r.getTitulo());
-        holder.tvSubtitulo.setText(r.getHora() + "   ·   " + r.getFrecuencia());
+        holder.tvSubtitulo.setText(
+                r.getHora() + " · " + r.getFrecuencia()
+        );
         holder.tvCategoria.setText(r.getCategoria());
 
-        holder.icono.setAlpha(r.isActivo() ? 1f : 0.3f);
+        // Cambiar opacidad del icono según si está activo
+        holder.icono.setAlpha(
+                r.isActivo() ? 1f : 0.3f
+        );
 
+        // Estado del switch
         holder.switchActivo.setChecked(r.isActivo());
-        holder.switchActivo.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            listener.onSwitchChanged(r, isChecked);
-            holder.icono.setAlpha(isChecked ? 1f : 0.3f);
-        });
+        holder.switchActivo.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
 
-        holder.btnEliminar.setOnClickListener(v -> listener.onDelete(r));
+                    listener.onSwitchChanged(r, isChecked);
+                    holder.icono.setAlpha(
+                            isChecked ? 1f : 0.3f
+                    );
+                }
+        );
+
+        // Botón eliminar
+        holder.btnEliminar.setOnClickListener(
+                v -> listener.onDelete(r)
+        );
     }
 
     @Override

@@ -27,17 +27,25 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment que actúa como panel de control del administrador.
+ * Permite ver estadísticas generales, listar usuarios
+ * y realizar acciones administrativas sobre ellos.
+ */
 public class AdminDashboardFragment extends Fragment {
 
     private static final String TAG = "AdminDashboard";
 
+    // Firebase
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
+    // Vistas
     private TextView tvWelcome, tvUsers, tvRoutines, tvReminders;
     private RecyclerView rvUsers;
     private Button btnLogout;
 
+    // RecyclerView
     private UsuariosAdapter usuariosAdapter;
     private List<Usuario> listaUsuarios;
 
@@ -48,12 +56,15 @@ public class AdminDashboardFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
 
+        // Inflamos el layout del dashboard de administrador
         View view = inflater.inflate(
                 R.layout.fragment_dashboard_admin, container, false);
 
+        // Inicialización de Firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        // Referencias a vistas
         tvWelcome = view.findViewById(R.id.tvAdminWelcome);
         tvUsers = view.findViewById(R.id.tvTotalUsers);
         tvRoutines = view.findViewById(R.id.tvTotalRoutines);
@@ -61,16 +72,20 @@ public class AdminDashboardFragment extends Fragment {
         btnLogout = view.findViewById(R.id.btnAdminLogout);
         rvUsers = view.findViewById(R.id.rvUsers);
 
+        // Lista de usuarios
         listaUsuarios = new ArrayList<>();
 
+        // Adapter con callback para opciones de administrador
         usuariosAdapter = new UsuariosAdapter(
                 listaUsuarios,
                 this::mostrarOpcionesAdmin
         );
 
+        // Configuración del RecyclerView
         rvUsers.setLayoutManager(new LinearLayoutManager(getContext()));
         rvUsers.setAdapter(usuariosAdapter);
 
+        // Carga de datos
         cargarAdmin();
         cargarEstadisticas();
         cargarUsuarios();
@@ -79,6 +94,10 @@ public class AdminDashboardFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Carga la información del administrador logueado
+     * para mostrar un mensaje de bienvenida.
+     */
     private void cargarAdmin() {
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) return;
@@ -94,6 +113,10 @@ public class AdminDashboardFragment extends Fragment {
                 });
     }
 
+    /**
+     * Obtiene estadísticas generales de la aplicación:
+     * número de usuarios, rutinas y recordatorios.
+     */
     private void cargarEstadisticas() {
 
         db.collection("users")
@@ -115,6 +138,10 @@ public class AdminDashboardFragment extends Fragment {
                 );
     }
 
+    /**
+     * Carga todos los usuarios desde Firestore
+     * y los muestra en el RecyclerView.
+     */
     private void cargarUsuarios() {
 
         db.collection("users")
@@ -138,7 +165,10 @@ public class AdminDashboardFragment extends Fragment {
                 );
     }
 
-    // 👑 OPCIONES ADMIN
+    /**
+     * Muestra un diálogo con opciones administrativas
+     * para el usuario seleccionado.
+     */
     private void mostrarOpcionesAdmin(Usuario usuario) {
 
         String[] opciones = {
@@ -161,7 +191,9 @@ public class AdminDashboardFragment extends Fragment {
                 .show();
     }
 
-    // 🔁 CAMBIAR ROL
+    /**
+     * Cambia el rol del usuario entre "admin" y "user".
+     */
     private void cambiarRol(Usuario usuario) {
 
         String nuevoRol =
@@ -181,7 +213,10 @@ public class AdminDashboardFragment extends Fragment {
                 });
     }
 
-    // 🗑️ CONFIRMAR BORRADO
+    /**
+     * Muestra un diálogo de confirmación antes
+     * de eliminar definitivamente un usuario.
+     */
     private void confirmarEliminarUsuario(Usuario usuario) {
 
         new AlertDialog.Builder(requireContext())
@@ -192,7 +227,10 @@ public class AdminDashboardFragment extends Fragment {
                 .show();
     }
 
-    // ❌ ELIMINAR USUARIO (Firestore)
+    /**
+     * Elimina el usuario de la colección "users" en Firestore
+     * y lo quita de la lista local.
+     */
     private void eliminarUsuario(Usuario usuario) {
 
         db.collection("users")
@@ -209,6 +247,10 @@ public class AdminDashboardFragment extends Fragment {
                 });
     }
 
+    /**
+     * Cierra la sesión del administrador y navega
+     * de vuelta a la pantalla de login.
+     */
     private void configurarLogout(View view) {
         btnLogout.setOnClickListener(v -> {
             auth.signOut();
